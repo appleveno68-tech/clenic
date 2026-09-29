@@ -1092,5 +1092,97 @@ async function boot(){
 }
 void boot();
 </script>
+  <!-- ================= نظام الفترة التجريبية والتفعيل بقلم صلاح ================= -->
+<div id="trial-banner" style="display:none; position:fixed; top:0; left:0; width:100%; background:linear-gradient(90deg, #ff9900, #ff5500); color:white; text-align:center; padding:12px; font-family:sans-serif; font-size:16px; font-weight:bold; z-index:999999; box-shadow:0 2px 10px rgba(0,0,0,0.2); direction:rtl;">
+    📢 نظام تجريبي مجاني — متبقي لك <span id="days-left">14</span> أيام للاستخدام. للاشتراك تواصل على الواتساب 📱
+</div>
+
+<div id="lock-screen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:#f4f6f9; z-index:9999999; font-family:sans-serif; text-align:center; padding-top:10%; direction:rtl;">
+    <div style="background:white; max-width:550px; margin:0 auto; padding:40px; border-radius:12px; box-shadow:0 4px 25px rgba(0,0,0,0.1); border-top:6px solid #e74c3c;">
+        <h2 style="color:#e74c3c; font-size:28px; margin-bottom:20px;">انتهت الفترة التجريبية المجانية 🔴</h2>
+        <p style="color:#333; font-size:18px; line-height:1.6; margin-bottom:25px;">
+            للاستمرار في استخدام نظام إدارة العيادة، يرجى الاشتراك لمدة سنة بـ <strong style="color:#2c3e50;">499 ريال سعودي</strong> أو <strong style="color:#2c3e50;">5000 جنيه مصري</strong>.
+        </p>
+        <p style="margin-bottom:30px;">
+            <a href="https://wa.me" target="_blank" style="background-color:#25D366; color:white; padding:12px 25px; border-radius:30px; text-decoration:none; font-size:18px; font-weight:bold; display:inline-block; box-shadow:0 4px 10px rgba(37,211,102,0.3);">
+                💬 تواصل عبر واتساب للتفعيل
+            </a>
+        </p>
+        <div style="border-top:1px solid #eee; padding-top:25px;">
+            <p style="color:#666; font-size:15px; margin-bottom:10px;">هل لديك كود تفعيل بالفعل؟ أدخله بالأسفل:</p>
+            <input type="text" id="license-input" placeholder="أدخل كode التفعيل هنا" style="padding:12px; width:65%; border:2px solid #ddd; border-radius:6px; font-size:16px; text-align:center; text-transform:uppercase;">
+            <button onclick="validateLicense()" style="padding:12px 20px; background-color:#34495e; color:white; border:none; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer; margin-right:5px;">تفعيل</button>
+            <p id="error-msg" style="color:#e74c3c; font-weight:bold; margin-top:10px; display:none;">كود التفعيل غير صحيح، يرجى المحاولة مجدداً.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // قائمة الأكواد الخمسة المعتمدة والآمنة لتفعيل التطبيق
+    const VALID_KEYS = [
+        'SALAH-CLINIC-9F3K-7X2M-A1',
+        'SALAH-CLINIC-4QD8-LZ6P-B2',
+        'SALAH-CLINIC-7TN2-VH9R-C3',
+        'SALAH-CLINIC-2WY5-KJ3E-D4',
+        'SALAH-CLINIC-8MR6-PQ4S-E5'
+    ];
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // تأخير بسيط للتأكد من تحميل عناصر الصفحة والتوافق مع نظام العيادة
+        setTimeout(checkTrialAndLock, 1000);
+    });
+
+    function checkTrialAndLock() {
+        // إذا كان التطبيق مفعلاً مسبقاً، لا تفعل شيئاً وافتح النظام
+        if (localStorage.getItem('clinic_is_activated') === 'true') {
+            return;
+        }
+
+        // جلب أو تسجيل تاريخ أول دخول للمستخدم
+        let startDate = localStorage.getItem('clinic_start_date');
+        if (!startDate) {
+            startDate = new Date().toISOString();
+            localStorage.setItem('clinic_start_date', startDate);
+        }
+
+        const start = new Date(startDate);
+        const now = new Date();
+        
+        // حساب الفارق الزمني بالأيام
+        const timeDiff = now.getTime() - start.getTime();
+        const daysPassed = Math.floor(timeDiff / (1000 * 3600 * 24));
+        const daysLeft = 14 - daysPassed;
+
+        if (daysLeft <= 0) {
+            // إذا انتهت الـ 14 يوماً، احجب الموقع بالكامل خلف شاشة القفل
+            document.getElementById('lock-screen').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // منع التمرير
+        } else {
+            // إذا كان في الفترة التجريبية، أظهر شريط التنبيه في الأعلى
+            document.getElementById('trial-banner').style.display = 'block';
+            document.getElementById('days-left').innerText = daysLeft;
+            document.body.style.paddingTop = '45px'; // إزاحة الصفحة للأسفل لكي لا يغطي الشريط المحتوى
+        }
+    }
+
+    function validateLicense() {
+        const inputKey = document.getElementById('license-input').value.trim().toUpperCase();
+        const errorMsg = document.getElementById('error-msg');
+
+        if (VALID_KEYS.includes(inputKey)) {
+            // تفعيل ناجح
+            localStorage.setItem('clinic_is_activated', 'true');
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('trial-banner').style.display = 'none';
+            document.body.style.paddingTop = '0px';
+            document.body.style.overflow = 'auto';
+            alert('🎉 تم تفعيل النظام بنجاح مدى الحياة! شكراً لاشتراكك.');
+        } else {
+            // كود خاطئ
+            errorMsg.style.display = 'block';
+        }
+    }
+</script>
+<!-- ========================================================================= -->
 </body>
 </html>
