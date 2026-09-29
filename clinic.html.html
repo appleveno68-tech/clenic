@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عيادة د. صلاح علي — نظام إدارة العيادة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap" rel="stylesheet">
+<style>
+/* ===================== المتغيرات والأساسيات (قسم ٥) ===================== */
+:root{
+  --green:#1E7A4C; --green-dark:#166039; --green-light:#E4F2EA;
+  --blue:#1F5C9E; --blue-dark:#174879; --blue-light:#E6EEF7;
+  --bg:#F7F9F8; --card:#FFFFFF; --text:#222222; --text2:#6B7770;
+  --danger:#C0392B; --danger-light:#FBEAE8;
+  --amber:#B9770E; --amber-light:#FCF3E0;
+  --gray:#7C8781; --gray-light:#EEF1F0;
+  --border:#E5EAE7;
+  --shadow:0 1px 3px rgba(16,42,30,.06),0 10px 28px rgba(16,42,30,.07);
+  --radius:16px;
+}
+body.dark{
+  --bg:#111714; --card:#1B231F; --text:#EDF2EF; --text2:#98A69E;
+  --border:#2A3630; --shadow:0 1px 3px rgba(0,0,0,.5),0 10px 28px rgba(0,0,0,.35);
+  --green-light:#1D3A2B; --blue-light:#1C2E42; --danger-light:#3B2320;
+  --amber-light:#3A2F18; --gray-light:#252E29;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);font-size:14px;transition:background .3s,color .3s}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+::selection{background:var(--green-light)}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+#app{display:flex;min-height:100vh}
+
+/* ===================== الشريط الجانبي ===================== */
+aside{width:252px;flex:none;position:sticky;top:0;height:100vh;background:var(--card);border-inline-end:1px solid var(--border);display:flex;flex-direction:column;padding:20px 14px;gap:4px;z-index:20;transition:width .3s}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 10px 20px}
+.brand .logo{width:48px;height:48px;flex:none;border-radius:15px;background:linear-gradient(135deg,var(--green),#2EA36B);display:grid;place-items:center;font-size:25px;color:#fff;box-shadow:0 6px 16px rgba(30,122,76,.35)}
+.brand b{font-size:15px;display:block;line-height:1.5}
+.brand span{font-size:11.5px;color:var(--text2)}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:13px;color:var(--text2);font-weight:600;font-size:14px;border:none;background:transparent;width:100%;text-align:right;transition:all .25s}
+.nav-item .ic{font-size:19px;width:24px;text-align:center}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--green-light);color:var(--green);font-weight:800}
+.phase-badge{margin-top:auto;font-size:11px;color:var(--text2);background:var(--bg);border:1px dashed var(--border);border-radius:12px;padding:10px;line-height:1.8;text-align:center}
+
+/* ===================== المحتوى ===================== */
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 28px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.topbar h1{font-size:21px;font-weight:800}
+.topbar .date-lbl{color:var(--text2);font-size:12.5px;font-weight:600}
+.topbar .spacer{flex:1}
+.topbar-search{width:260px;background:var(--card)}
+.content{padding:26px 28px 60px;max-width:1280px;width:100%;margin:0 auto}
+
+.view{display:none}
+.view.active{display:block;animation:viewIn .32s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ===================== مكونات عامة ===================== */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:18px}
+.card h3{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h3 .spacer{flex:1}
+.grid{display:grid;gap:18px}
+.grid.cols-2{grid-template-columns:1fr 1fr}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.grid.cols-4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1050px){.grid.cols-4{grid-template-columns:repeat(2,1fr)}.grid.cols-3{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:13px;font-weight:700;font-size:13.5px;border:none;transition:all .25s;text-decoration:none}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green-dark);transform:translateY(-1px)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-dark);transform:translateY(-1px)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(.92)}
+.btn-soft{background:var(--green-light);color:var(--green)}
+.btn-soft:hover{filter:brightness(.97)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-ghost:hover{background:var(--bg)}
+.icon-btn{border:none;background:transparent;font-size:15px;width:34px;height:34px;border-radius:10px;transition:background .2s;color:var(--text)}
+.icon-btn:hover{background:var(--gray-light)}
+.icon-btn.danger:hover{background:var(--danger-light)}
+
+.input{width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--card);font-size:13.5px;color:var(--text);transition:border-color .2s,box-shadow .2s}
+.input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(31,92,158,.13)}
+textarea.input{resize:vertical;min-height:70px}
+.field{margin-bottom:14px}
+.field>label{display:block;font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.field .hint{font-size:11px;color:var(--text2);margin-top:4px}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.toolbar .spacer{flex:1}
+
+.seg{display:inline-flex;background:var(--gray-light);border-radius:13px;padding:4px;gap:4px}
+.seg button{border:none;background:transparent;padding:7px 16px;border-radius:10px;font-weight:700;font-size:13px;color:var(--text2);transition:all .25s}
+.seg button.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap}
+.badge.green{background:var(--green-light);color:var(--green)}
+.badge.blue{background:var(--blue-light);color:var(--blue)}
+.badge.red{background:var(--danger-light);color:var(--danger)}
+.badge.amber{background:var(--amber-light);color:var(--amber)}
+.badge.gray{background:var(--gray-light);color:var(--gray)}
+.chip-info{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:5px 13px;font-size:12.5px;font-weight:600}
+
+.avatar{width:42px;height:42px;border-radius:13px;background:var(--green-light);display:inline-grid;place-items:center;font-size:20px;object-fit:cover;flex:none}
+.avatar.lg{width:86px;height:86px;border-radius:22px;font-size:42px}
+
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11.5px;color:var(--text2);font-weight:800;text-align:right;padding:10px 12px;border-bottom:1.5px solid var(--border)}
+.table td{padding:12px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tbody tr{transition:background .15s}
+.table tbody tr:hover{background:var(--bg)}
+.cell-main{display:flex;align-items:center;gap:11px}
+.sub{font-size:11.5px;color:var(--text2);font-weight:500}
+.row-actions{white-space:nowrap;text-align:left}
+
+.empty{text-align:center;color:var(--text2);padding:38px 12px;font-size:13.5px;line-height:2}
+.empty .big{font-size:38px;display:block;margin-bottom:6px}
+
+/* لوحة التحكم */
+.stat{display:flex;align-items:center;gap:15px}
+.stat .s-ic{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:25px;flex:none}
+.stat .s-num{font-size:23px;font-weight:800;line-height:1.3}
+.stat .s-lbl{font-size:12px;color:var(--text2);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:14px}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:24px 12px;text-align:center;transition:all .25s}
+.tile:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(16,42,30,.13)}
+.tile .t-ic{width:64px;height:64px;margin:0 auto 12px;border-radius:19px;display:grid;place-items:center;font-size:30px}
+.tile b{font-size:14px}
+.mini-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:10px;transition:background .15s}
+.mini-row:hover{background:var(--bg)}
+.mini-row:last-child{border-bottom:none}
+.mini-row .grow{flex:1;min-width:0}
+.pulse{animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* المواعيد */
+.slot{display:flex;gap:14px;padding:7px 0;border-bottom:1px dashed var(--border)}
+.slot .hour{width:78px;flex:none;color:var(--text2);font-size:12.5px;font-weight:700;padding-top:9px}
+.slot-body{flex:1;min-height:44px;border-radius:12px;transition:background .2s;display:flex;flex-direction:column;gap:6px}
+.slot-body:hover{background:var(--bg)}
+.slot-empty{font-size:11.5px;color:var(--text2);opacity:0;transition:opacity .2s;padding:10px;text-align:center;border:1.5px dashed var(--border);border-radius:12px}
+.slot-body:hover .slot-empty{opacity:.8}
+.appt-chip{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 14px;border-radius:13px;background:var(--card);border:1px solid var(--border);border-inline-start:4px solid var(--gray);box-shadow:0 1px 3px rgba(0,0,0,.05);cursor:pointer;transition:transform .2s,box-shadow .2s;font-size:13px}
+.appt-chip:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.st-blue{border-inline-start-color:var(--blue)} .st-green{border-inline-start-color:var(--green)}
+.st-red{border-inline-start-color:var(--danger)} .st-gray{border-inline-start-color:var(--gray);opacity:.75}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.day-col{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px;min-height:220px;max-height:520px;overflow:auto}
+.day-col.today{border-color:var(--green);box-shadow:0 0 0 2px var(--green-light)}
+.day-head{text-align:center;font-size:12px;font-weight:800;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border);cursor:pointer;color:var(--text2)}
+.day-col.today .day-head{color:var(--green)}
+.day-head b{display:block;font-size:15px}
+.week-chip{padding:7px 9px;border-radius:10px;background:var(--bg);border-inline-start:3px solid var(--blue);margin-bottom:7px;font-size:11.5px;cursor:pointer;line-height:1.7;transition:background .2s}
+.week-chip:hover{background:var(--blue-light)}
+.status-pills{display:flex;gap:8px;flex-wrap:wrap}
+.status-pills .pill{padding:7px 16px;border-radius:999px;border:1.5px solid var(--border);background:var(--card);font-weight:700;font-size:12.5px;color:var(--text2);transition:all .2s}
+.status-pills .pill.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* الفواتير */
+.inv-row{display:grid;grid-template-columns:1fr 130px 38px;gap:8px;margin-bottom:8px}
+.inv-total{display:flex;justify-content:flex-end;gap:10px;align-items:center;font-size:16px;font-weight:800;margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--border)}
+.print-invoice{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;color:#1c1c1c}
+.pi-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--green);padding-bottom:14px;margin-bottom:14px}
+.pi-head h2{color:var(--green);font-size:19px}
+.pi-sub{font-size:12px;color:#666;margin-top:4px}
+.pi-meta{text-align:left;font-size:13px}
+.pi-parties{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;margin-bottom:14px}
+.pi-table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.pi-table th{background:var(--green-light);color:var(--green);font-size:12px;padding:8px;text-align:right}
+.pi-table td{padding:8px;border-bottom:1px solid #eee;font-size:13px}
+.pi-totals{display:flex;gap:22px;flex-wrap:wrap;justify-content:flex-end;font-size:13.5px}
+.pi-foot{text-align:center;color:#888;font-size:11.5px;margin-top:18px}
+
+/* السجلات والتقارير */
+.rec-row{display:flex;gap:14px;padding:14px 4px;border-bottom:1px solid var(--border);align-items:flex-start}
+.rec-row:last-child{border-bottom:none}
+.rec-date{width:86px;flex:none;text-align:center;background:var(--bg);border-radius:12px;padding:8px 4px;font-size:11.5px;font-weight:700;color:var(--text2);line-height:1.9}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.bar-label{width:110px;flex:none;font-size:12.5px;font-weight:700}
+.bar-track{flex:1;background:var(--gray-light);border-radius:99px;height:14px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--green),#2EA36B);border-radius:99px;transition:width .5s}
+.bar-fill.blue{background:linear-gradient(90deg,var(--blue),#3E7FC4)}
+
+/* ملف المريض */
+.detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin:14px 0 18px}
+@media(max-width:900px){.detail-grid{grid-template-columns:1fr}}
+.patient-head{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.detail-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:1000px){.detail-cols{grid-template-columns:1fr}}
+
+/* النوافذ المنبثقة */
+.modal-overlay{position:fixed;inset:0;background:rgba(12,22,17,.45);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0}}
+.modal{background:var(--card);border-radius:20px;width:min(560px,94vw);max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);animation:pop .3s ease}
+.modal.wide{width:min(680px,94vw)}
+@keyframes pop{from{opacity:0;transform:translateY(18px) scale(.96)}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:2}
+.modal-head h3{font-size:16px;font-weight:800}
+.modal-body{padding:22px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-start;padding-top:16px;margin-top:6px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+/* التنبيهات */
+#toast-root{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{background:#20301f;color:#fff;padding:11px 22px;border-radius:13px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;transform:translateY(12px);transition:all .3s}
+.toast.show{opacity:1;transform:none}
+.toast.err{background:var(--danger)}
+#auth-root{position:fixed;inset:0;z-index:500;background:linear-gradient(135deg,#123b29,#1e7a4c);display:none;align-items:center;justify-content:center;padding:20px}
+#auth-root.show{display:flex}
+.auth-card{width:min(420px,94vw);background:#fff;border-radius:24px;padding:30px;box-shadow:0 24px 70px rgba(0,0,0,.35);text-align:center}
+.auth-card .auth-logo{width:72px;height:72px;object-fit:contain;margin:0 auto 14px;border-radius:18px}
+
+@media(max-width:960px){
+  aside{width:80px;padding:16px 10px}
+  .nav-item .lbl,.brand .brand-txt,.phase-badge{display:none}
+  .nav-item{justify-content:center}
+  .topbar-search{width:160px}
+}
+
+/* الطباعة */
+#print-area{display:none}
+@media print{
+  body{background:#fff}
+  #app,#modal-root,#toast-root{display:none!important}
+  #print-area{display:block!important;padding:10mm}
+  #print-area .print-invoice{border:none;box-shadow:none;padding:0}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- الشريط الجانبي -->
+  <aside>
+    <div class="brand">
+      <div class="logo">🐾</div>
+      <div class="brand-txt"><b id="brand-name">عيادة د. صلاح علي</b><span>نظام إدارة العيادة البيطرية</span></div>
+    </div>
+    <button class="nav-item" data-view="dashboard" onclick="navigate('dashboard')"><span class="ic">🏠</span><span class="lbl">لوحة التحكم</span></button>
+    <button class="nav-item" data-view="queue" onclick="navigate('queue')"><span class="ic">🎫</span><span class="lbl">الاستقبال والطابور</span></button>
+    <button class="nav-item" data-view="announcements" onclick="navigate('announcements')"><span class="ic">📢</span><span class="lbl">المناداة الصوتية</span></button>
+    <button class="nav-item" data-view="patients" onclick="navigate('patients')"><span class="ic">🐾</span><span class="lbl">المرضى</span></button>
+    <button class="nav-item" data-view="appointments" onclick="navigate('appointments')"><span class="ic">📅</span><span class="lbl">المواعيد</span></button>
+    <button class="nav-item" data-view="invoices" onclick="navigate('invoices')"><span class="ic">🧾</span><span class="lbl">الفواتير</span></button>
+    <button class="nav-item" data-view="records" onclick="navigate('records')"><span class="ic">📋</span><span class="lbl">السجلات الطبية</span></button>
+    <button class="nav-item" data-view="diagnostics" onclick="navigate('diagnostics')"><span class="ic">🧪</span><span class="lbl">الأشعة والمختبر</span></button>
+    <button class="nav-item" data-view="prescriptions" onclick="navigate('prescriptions')"><span class="ic">💊</span><span class="lbl">الوصفات العلاجية</span></button>
+    <button class="nav-item" data-view="procedures" onclick="navigate('procedures')"><span class="ic">🩺</span><span class="lbl">العمليات والتخدير</span></button>
+    <button class="nav-item" data-view="inventory" onclick="navigate('inventory')"><span class="ic">💊</span><span class="lbl">المخزون والصيدلية</span></button>
+    <button class="nav-item" data-view="expenses" onclick="navigate('expenses')"><span class="ic">💸</span><span class="lbl">المصروفات</span></button>
+    <button class="nav-item" data-view="cash" onclick="navigate('cash')"><span class="ic">💰</span><span class="lbl">الوردية والنقدية</span></button>
+    <button class="nav-item" data-view="reports" onclick="navigate('reports')"><span class="ic">📊</span><span class="lbl">التقارير</span></button>
+    <button class="nav-item" data-view="settings" onclick="navigate('settings')"><span class="ic">⚙️</span><span class="lbl">الإعدادات</span></button>
+    <div class="phase-badge">الإصدار 3.0 — نظام عيادة سعودي<br>حفظ محلي تلقائي</div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div><h1 id="page-title">لوحة التحكم</h1><div class="date-lbl" id="today-label"></div></div>
+      <div class="spacer"></div>
+      <input id="global-search" class="input topbar-search" placeholder="🔍 بحث سريع عن مريض أو مالك…"
+             onkeydown="if(event.key==='Enter'){state.patientsQuery=this.value;state.patientViewId=null;navigate('patients');this.value='';}">
+      <span id="active-user" class="sub"></span><button class="btn btn-ghost" onclick="logoutUser()">خروج</button>
+      <button class="btn btn-primary" onclick="openApptModal()">＋ موعد جديد</button>
+    </div>
+
+    <div class="content">
+      <div class="view" id="view-dashboard"></div>
+      <div class="view" id="view-queue"></div>
+      <div class="view" id="view-announcements"></div>
+      <div class="view" id="view-patients"></div>
+      <div class="view" id="view-appointments"></div>
+      <div class="view" id="view-invoices"></div>
+      <div class="view" id="view-records"></div>
+      <div class="view" id="view-diagnostics"></div>
+      <div class="view" id="view-prescriptions"></div>
+      <div class="view" id="view-procedures"></div>
+      <div class="view" id="view-inventory"></div>
+      <div class="view" id="view-expenses"></div>
+      <div class="view" id="view-cash"></div>
+      <div class="view" id="view-reports"></div>
+      <div class="view" id="view-settings"></div>
+    </div>
+  </main>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<div id="print-area"></div>
+<div id="auth-root"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+'use strict';
+/* ============================================================
+   نظام إدارة عيادة د. صلاح علي — إصدار العيادات البيطرية السعودية
+   بنية البيانات مطابقة للقسم ٦ من وثيقة المتطلبات
+   ============================================================ */
+
+/* ---------- أدوات عامة ---------- */
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const uid=()=> (window.crypto&&crypto.randomUUID)?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const AR=new Intl.NumberFormat('ar-EG');
+const fmtNum=n=>AR.format(n??0);
+const fmtDate=iso=>!iso?'—':new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(iso));
+const fmtDateShort=iso=>!iso?'—':new Intl.DateTimeFormat('ar-EG',{day:'numeric',month:'short'}).format(new Date(iso));
+const fmtTime=iso=>new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit'}).format(new Date(iso));
+const hourLabel=h=>new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit'}).format(new Date(2000,0,1,h,0));
+const toInputDate=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
+const toInputTime=d=>{const x=new Date(d);return String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0');};
+const sameDay=(a,b)=>toInputDate(a)===toInputDate(b);
+const isToday=iso=>sameDay(iso,new Date());
+const money=n=>fmtNum(Math.round((n??0)*100)/100)+' '+DB.settings.currency;
+const taxRate=()=>Math.max(0,Number(DB.settings.taxRate??15));
+const invoiceTotals=inv=>{
+  if(inv.subtotal===undefined)return {subtotal:Number(inv.totalAmount??0),tax:Number(inv.taxAmount??0),total:Number(inv.totalAmount??0)};
+  const subtotal=Number(inv.subtotal??0);
+  const taxEnabled=inv.taxEnabled!==false;
+  const tax=taxEnabled?Number(inv.taxAmount??Math.round(subtotal*taxRate())/100):0;
+  return {subtotal,tax,total:Math.round((subtotal+tax)*100)/100};
+};
+function startOfWeek(d){const x=new Date(d);x.setHours(0,0,0,0);const diff=(x.getDay()+1)%7;x.setDate(x.getDate()-diff);return x;}
+function ageText(b){if(!b)return '—';const x=new Date(b),n=new Date();let m=(n.getFullYear()-x.getFullYear())*12+(n.getMonth()-x.getMonth());const y=Math.floor(m/12);m=m%12;if(y<1)return m===0?'أقل من شهر':fmtNum(m)+' شهر';return m===0?fmtNum(y)+(y===1?' سنة':' سنوات'):fmtNum(y)+' س و '+fmtNum(m)+' ش';}
+const SPECIES_IC={'قط':'🐱','كلب':'🐶','طائر':'🐦','أرنب':'🐰','هامستر':'🐹','سلحفاة':'🐢'};
+const spIcon=s=>SPECIES_IC[s]||'🐾';
+const avatar=(p,cls='')=>p.photoPath?`<img class="avatar ${cls}" src="${p.photoPath}">`:`<span class="avatar ${cls}">${spIcon(p.species)}</span>`;
+const badge=(t,c)=>`<span class="badge ${c}">${esc(t)}</span>`;
+const APPT_ST={'مجدول':'blue','حضر':'green','ملغى':'gray','لم يحضر':'red'};
+const PAY_ST={'مدفوع':'green','جزئي':'amber','غير مدفوع':'red'};
+const REC_ST={'تشخيص':'blue','علاج':'green','تطعيم':'amber','متابعة':'gray','أخرى':'gray'};
+
+/* ---------- قاعدة البيانات المحلية في المتصفح ---------- */
+const COUNTRY_PROFILES={"السعودية":{currency:'ر.س',taxRate:15,address:'المملكة العربية السعودية',taxLabel:'ضريبة القيمة المضافة'},"مصر":{currency:'ج.م',taxRate:14,address:'جمهورية مصر العربية',taxLabel:'ضريبة القيمة المضافة'}};
+function applyCountryProfile(country){const p=COUNTRY_PROFILES[country]||COUNTRY_PROFILES['السعودية'];DB.settings.country=country;DB.settings.currency=p.currency;DB.settings.taxRate=p.taxRate;if(!DB.settings.address||Object.values(COUNTRY_PROFILES).some(x=>x.address===DB.settings.address))DB.settings.address=p.address;}
+const DB={settings:{country:'السعودية',clinicName:'',doctorName:'',phone:'',address:'',city:'',commercialReg:'',vatNumber:'',licenseNumber:'',logoData:'',logoName:'',clinicCode:'',securityEnabled:false,currency:'ر.س',taxEnabled:true,taxRate:15,theme:'فاتح'},
+           owners:[],patients:[],appointments:[],medicalRecords:[],procedures:[],diagnostics:[],invoices:[],queue:[],announcements:[],inventory:[],stockMovements:[],prescriptions:[],expenses:[],cashSessions:[],staff:[]};
+let currentUser=null;
+const ROLE_VIEWS={"مدير":['dashboard','queue','announcements','patients','appointments','invoices','records','diagnostics','prescriptions','procedures','inventory','expenses','cash','reports','settings'],"طبيب بيطري":['dashboard','queue','announcements','patients','appointments','records','diagnostics','prescriptions','procedures','inventory','reports'],"مساعد طبيب":['dashboard','queue','announcements','patients','appointments','records','diagnostics','prescriptions','procedures','inventory'],"استقبال":['dashboard','queue','announcements','patients','appointments','invoices','reports'],"كاشير":['dashboard','queue','announcements','patients','invoices','expenses','cash','reports']};
+const STORAGE_KEY='clinic-dr-salah-state-v1';
+const FIREBASE_CONFIG={apiKey:'AIzaSyDDbojUyoKkjHp_a6I0dDWXeFtFHm_Mc-c',authDomain:'clenic-5bb8d.firebaseapp.com',projectId:'clenic-5bb8d',storageBucket:'clenic-5bb8d.firebasestorage.app',messagingSenderId:'708632941593',appId:'1:708632941593:web:93f6c8ce05843896bb4688',measurementId:'G-QBG2PL4W2V'};
+let cloudFirestore=null,cloudSyncEnabled=false;
+async function initCloud(){try{if(!window.firebase||!firebase.initializeApp)return false;const app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONFIG);const auth=firebase.auth(app);await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);if(!auth.currentUser)await auth.signInAnonymously();cloudFirestore=firebase.firestore(app);cloudFirestore.settings({ignoreUndefinedProperties:true});cloudSyncEnabled=true;return true;}catch(err){console.warn('Firebase sync unavailable',err);cloudSyncEnabled=false;return false;}}
+async function signInWithGoogle(){if(!cloudSyncEnabled||!window.firebase)return null;const auth=firebase.auth();const provider=new firebase.auth.GoogleAuthProvider();const result=await auth.signInWithPopup(provider);return result.user;}
+async function cloudLoadState(code){if(!cloudSyncEnabled||!code)return null;try{const snap=await cloudFirestore.collection('clinics').doc(code).get();return snap.exists?(snap.data().payload||null):null;}catch(err){console.warn('Cloud load failed',err);return null;}}
+async function cloudSaveState(){if(!cloudSyncEnabled||!DB.settings.clinicCode)return false;try{await cloudFirestore.collection('clinics').doc(DB.settings.clinicCode).set({payload:JSON.parse(JSON.stringify(DB)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return true;}catch(err){console.warn('Cloud save failed',err);return false;}}
+const hasLocalDatabase=()=>Boolean(window.clinicDB&&typeof window.clinicDB.load==='function');
+async function loadStoredDB(){
+  if(hasLocalDatabase()){
+    try{return await window.clinicDB.load();}catch(err){console.error('Desktop database load failed',err);}
+  }
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(err){
+    console.error('Browser storage load failed',err);
+    return null;
+  }
+}
+async function persistDB(){
+  if(hasLocalDatabase()){
+    try{await window.clinicDB.save(JSON.parse(JSON.stringify(DB)));}catch(err){console.error('Desktop database save failed',err);}
+  }
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(DB));
+  }catch(err){
+    console.error('Browser storage save failed',err);
+    toast('تعذر حفظ البيانات على المتصفح','err');
+  }
+  await cloudSaveState();
+  return Promise.resolve();
+}
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(DB));}catch(err){console.error('Browser storage final save failed',err);}});
+function seed(){
+  const mk=(days,h,m)=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(h||10,m||0,0,0);return d.toISOString();};
+  DB.owners=[
+    {id:'o1',fullName:'أحمد محمود',phone:'01001234567',address:'مدينة نصر'},
+    {id:'o2',fullName:'منى الشريف',phone:'01112345678',address:'المعادي'},
+    {id:'o3',fullName:'محمد عبد الله',phone:'01223456789',address:''},
+    {id:'o4',fullName:'سارة حسن',phone:'01098765432',address:'الدقي'},
+    {id:'o5',fullName:'خالد إبراهيم',phone:'01555443322',address:''}];
+  DB.patients=[
+    {id:'p1',ownerId:'o1',name:'لولو',species:'قط',breed:'شيرازي',birthDate:mk(-800,0,0),gender:'أنثى',weight:3.4,photoPath:''},
+    {id:'p2',ownerId:'o2',name:'سيمبا',species:'كلب',breed:'جولدن ريتريفر',birthDate:mk(-1100,0,0),gender:'ذكر',weight:24.5,photoPath:''},
+    {id:'p3',ownerId:'o3',name:'روكي',species:'كلب',breed:'جيرمن شيبرد',birthDate:mk(-1500,0,0),gender:'ذكر',weight:31,photoPath:''},
+    {id:'p4',ownerId:'o4',name:'ميمي',species:'قط',breed:'سيامي',birthDate:mk(-300,0,0),gender:'أنثى',weight:2.1,photoPath:''},
+    {id:'p5',ownerId:'o5',name:'كوكي',species:'طائر',breed:'كوكاتيل',birthDate:mk(-500,0,0),gender:'ذكر',weight:0.09,photoPath:''},
+    {id:'p6',ownerId:'o1',name:'بندق',species:'أرنب',breed:'هولندي',birthDate:mk(-200,0,0),gender:'ذكر',weight:1.6,photoPath:''},
+    {id:'p7',ownerId:'o2',name:'ليلى',species:'قط',breed:'بلدي',birthDate:mk(-2000,0,0),gender:'أنثى',weight:4,photoPath:''}];
+  DB.appointments=[
+    {id:'a1',patientId:'p1',dateTime:mk(0,10,0),type:'كشف',status:'مجدول',notes:'فحص سنوي'},
+    {id:'a2',patientId:'p2',dateTime:mk(0,11,30),type:'تطعيم',status:'مجدول',notes:'الجرعة الثانية'},
+    {id:'a3',patientId:'p4',dateTime:mk(0,17,0),type:'متابعة',status:'مجدول',notes:''},
+    {id:'a4',patientId:'p3',dateTime:mk(-1,12,0),type:'كشف',status:'حضر',notes:'التهاب جلدي بسيط'},
+    {id:'a5',patientId:'p5',dateTime:mk(1,13,0),type:'كشف',status:'مجدول',notes:'فحص ريش'},
+    {id:'a6',patientId:'p6',dateTime:mk(-3,10,30),type:'تطعيم',status:'حضر',notes:''},
+    {id:'a7',patientId:'p7',dateTime:mk(3,16,0),type:'عملية',status:'مجدول',notes:'تعقيم'},
+    {id:'a8',patientId:'p3',dateTime:mk(-7,11,0),type:'متابعة',status:'لم يحضر',notes:''}];
+  DB.medicalRecords=[
+    {id:'m1',patientId:'p3',date:mk(-1,12,0),type:'تشخيص',description:'التهاب جلدي موضعي — يُنصح بمواصلة العلاج أسبوعاً',medication:'مضاد فطري موضعي',nextDueDate:mk(7,0,0)},
+    {id:'m2',patientId:'p2',date:mk(-30,11,0),type:'تطعيم',description:'تطعيم السعار — الجرعة الأولى',medication:'لقاح السعار',nextDueDate:mk(2,0,0)},
+    {id:'m3',patientId:'p6',date:mk(-3,10,30),type:'تطعيم',description:'تطعيم الفيروسات النزفية',medication:'لقاح RHDV',nextDueDate:mk(180,0,0)},
+    {id:'m4',patientId:'p1',date:mk(-90,10,0),type:'علاج',description:'علاج ديدان معوية — جرعة واحدة',medication:'فلوباندازول',nextDueDate:''},
+    {id:'m5',patientId:'p7',date:mk(-14,9,30),type:'تشخيص',description:'فحص ما قبل عملية التعقيم — الحالة مستقرة',medication:'',nextDueDate:''},
+    {id:'m6',patientId:'p5',date:mk(-190,12,0),type:'تطعيم',description:'تطعيم دوري',medication:'لقاح نيوكاسل',nextDueDate:mk(-2,0,0)}];
+  DB.invoices=[
+    {id:'i1',number:'INV-1001',patientId:'p3',date:mk(0,9,30),items:[{description:'كشف بيطري',price:200},{description:'أدوية (مضاد فطري)',price:150}],totalAmount:350,paidAmount:350,paymentStatus:'مدفوع'},
+    {id:'i2',number:'INV-1002',patientId:'p6',date:mk(-3,11,0),items:[{description:'كشف بيطري',price:200},{description:'تطعيم الفيروسات',price:250}],totalAmount:450,paidAmount:200,paymentStatus:'جزئي'},
+    {id:'i3',number:'INV-1003',patientId:'p1',date:mk(-90,10,30),items:[{description:'كشف بيطري',price:200},{description:'علاج ديدان',price:120}],totalAmount:320,paidAmount:320,paymentStatus:'مدفوع'},
+    {id:'i4',number:'INV-1004',patientId:'p7',date:mk(-14,10,0),items:[{description:'فحص ما قبل العملية',price:250}],totalAmount:250,paidAmount:0,paymentStatus:'غير مدفوع'}];
+}
+
+/* ---------- الحالة والتنقل ---------- */
+const state={view:'dashboard',patientsQuery:'',speciesFilter:'الكل',patientViewId:null,calDate:new Date(),calMode:'يوم',invStatusFilter:'الكل',recTypeFilter:'الكل',recQuery:'',reportPeriod:'شهري',queueDate:new Date(),diagType:'الكل'};
+const TITLES={dashboard:'لوحة التحكم',queue:'الاستقبال وطابور الانتظار',announcements:'المناداة الصوتية',patients:'المرضى',appointments:'المواعيد',invoices:'الفواتير',records:'السجلات الطبية',diagnostics:'الأشعة ونتائج المختبر',prescriptions:'الوصفات العلاجية',procedures:'العمليات والتخدير',inventory:'المخزون والصيدلية',expenses:'المصروفات',cash:'الوردية والنقدية',reports:'التقارير',settings:'الإعدادات'};
+const PERMISSION_LABELS={dashboard:'لوحة التحكم',queue:'الاستقبال والطابور',announcements:'المناداة الصوتية',patients:'المرضى',appointments:'المواعيد',invoices:'الفواتير',records:'السجلات الطبية',diagnostics:'الأشعة والمختبر',prescriptions:'الوصفات',procedures:'العمليات والتخدير',inventory:'المخزون والصيدلية',expenses:'المصروفات',cash:'الوردية والنقدية',reports:'التقارير',settings:'الإعدادات'};
+function permissionsFor(user){return user?.permissions?.length?user.permissions:(ROLE_VIEWS[user?.role]||ROLE_VIEWS['استقبال']);}
+function navigate(v){
+  if(currentUser&&DB.settings.securityEnabled&&!permissionsFor(currentUser).includes(v)){toast('لا تملك صلاحية فتح هذا القسم','err');return;}
+  state.view=v;
+  $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  $$('.view').forEach(x=>x.classList.remove('active'));
+  $('#view-'+v).classList.add('active');
+  $('#page-title').textContent=TITLES[v];
+  ({dashboard:renderDashboard,queue:renderQueue,announcements:renderAnnouncements,patients:renderPatients,appointments:renderAppointments,invoices:renderInvoices,records:renderRecords,diagnostics:renderDiagnostics,prescriptions:renderPrescriptions,procedures:renderProcedures,inventory:renderInventory,expenses:renderExpenses,cash:renderCash,reports:renderReports,settings:renderSettings})[v]();
+  window.scrollTo({top:0});
+}
+
+/* ---------- helpers بيانات ---------- */
+const getOwner=id=>DB.owners.find(o=>o.id===id);
+const getPatient=id=>DB.patients.find(p=>p.id===id);
+const getAppt=id=>DB.appointments.find(a=>a.id===id);
+function patientSelect(sel,allowNew){let h=(allowNew?`<option value="__new">➕ مريض جديد…</option>`:'');DB.patients.forEach(p=>{h+=`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)} — ${esc((getOwner(p.ownerId)||{}).fullName||'')} (${esc(p.species)})</option>`;});return h;}
+function lastVisit(pid){const ds=[...DB.appointments.filter(a=>a.patientId===pid&&a.status==='حضر').map(a=>a.dateTime),...DB.medicalRecords.filter(r=>r.patientId===pid).map(r=>r.date)];return ds.length?ds.sort().pop():null;}
+function dueVaccines(){const limit=Date.now()+7*864e5;return DB.medicalRecords.filter(r=>r.nextDueDate&&new Date(r.nextDueDate).getTime()<=limit).sort((a,b)=>new Date(a.nextDueDate)-new Date(b.nextDueDate));}
+const isOverdue=r=>r.nextDueDate&&new Date(r.nextDueDate)<new Date(new Date().setHours(0,0,0,0));
+function isSoon(a){if(a.status!=='مجدول')return false;const d=new Date(a.dateTime)-Date.now();return d>0&&d<=3600000;}
+const conflictOf=a=>DB.appointments.find(o=>o.id!==a.id&&o.status!=='ملغى'&&Math.abs(new Date(o.dateTime)-new Date(a.dateTime))<1800000);
+
+/* ---------- النوافذ والتنبيهات ---------- */
+function openModal(title,body,wide){$('#modal-root').innerHTML=`<div class="modal-overlay" onmousedown="if(event.target===this)closeModal()"><div class="modal ${wide?'wide':''}"><div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="closeModal()">✕</button></div><div class="modal-body">${body}</div></div></div>`;}
+function closeModal(){$('#modal-root').innerHTML='';}
+function confirmDialog(msg,onYes){window.__yes=onYes;openModal('تأكيد الإجراء',`<p style="font-size:14.5px;line-height:2">${msg}</p><div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-danger" onclick="closeModal();window.__yes()">نعم، تأكيد</button></div>`);}
+function toast(msg,type){const t=document.createElement('div');t.className='toast '+(type==='err'?'err':'');t.textContent=(type==='err'?'⚠ ':'✓ ')+msg;$('#toast-root').appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),320);},2600);}
+function newClinicCode(){const raw=(window.crypto?.getRandomValues?Array.from(crypto.getRandomValues(new Uint8Array(8))):Array.from({length:8},()=>Math.floor(Math.random()*256)));return 'CLN-'+raw.map(n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();}
+function showClinicSetup(){return new Promise(resolve=>{window.__clinicSetupResolve=resolve;openModal('تسجيل العيادة لأول مرة',`<form onsubmit="return saveClinicSetup(event)"><div class="hint" style="margin-bottom:16px">لإنشاء عيادة جديدة اكتب بياناتها. وإذا كان لديك رمز عيادة من جهاز آخر فاكتبه لاسترجاع بياناتها تلقائيًا.</div><div class="field"><label>رمز عيادة موجودة (اختياري)</label><input id="setup-code" class="input" placeholder="CLN-..." style="direction:ltr;text-align:left"><div class="hint">عند إدخال الرمز لن تحتاج لكتابة بيانات العيادة.</div></div><div class="field"><label>الدولة *</label><select id="setup-country" class="input"><option>السعودية</option><option>مصر</option></select></div><div class="grid cols-2"><div class="field"><label>اسم العيادة *</label><input id="setup-clinic" class="input" placeholder="مثال: عيادة أوكا البيطرية"></div><div class="field"><label>اسم الطبيب أو المسؤول *</label><input id="setup-doctor" class="input" placeholder="د. أحمد"></div><div class="field"><label>رقم الجوال</label><input id="setup-phone" class="input" inputmode="tel"></div><div class="field"><label>المدينة</label><input id="setup-city" class="input" placeholder="الرياض"></div><div class="field"><label>العنوان</label><input id="setup-address" class="input"></div><div class="field"><label>السجل التجاري</label><input id="setup-cr" class="input" inputmode="numeric"></div><div class="field"><label>الرقم الضريبي</label><input id="setup-vat" class="input" inputmode="numeric"></div><div class="field"><label>ترخيص المنشأة</label><input id="setup-license" class="input"></div></div><div class="modal-foot"><button class="btn btn-primary" type="submit">حفظ والمتابعة بحساب Google</button></div></form>`,true);});}
+function finishClinicSetup(){closeModal();if(window.__clinicSetupResolve){const r=window.__clinicSetupResolve;window.__clinicSetupResolve=null;r();}}
+async function copyClinicCode(){try{await navigator.clipboard.writeText(DB.settings.clinicCode);toast('تم نسخ رمز العيادة');}catch(err){toast('انسخ الرمز يدويًا واحفظه في مكان آمن','err');}}
+async function saveClinicSetup(e){e.preventDefault();const code=($('#setup-code')?.value||'').trim().toUpperCase(),country=$('#setup-country')?.value||'السعودية',name=$('#setup-clinic').value.trim(),doctor=$('#setup-doctor').value.trim();let googleUser;try{googleUser=await signInWithGoogle();}catch(err){toast('يجب تسجيل الدخول بحساب Google لإكمال التسجيل','err');return false;}if(code){if(!cloudSyncEnabled){toast('تعذر الاتصال بالسحابة. فعّل Anonymous وFirestore ثم أعد المحاولة','err');return false;}const remote=await cloudLoadState(code);if(!remote){toast('رمز العيادة غير موجود أو لا توجد صلاحية للوصول إليه','err');return false;}Object.keys(DB).forEach(k=>{if(remote[k]!==undefined)DB[k]=remote[k];});DB.settings={...DB.settings,clinicCode:code,clinicRegistered:true,lastGoogleUid:googleUser.uid,lastGoogleEmail:googleUser.email||''};await persistDB();$('#brand-name').textContent=DB.settings.clinicName;closeModal();openModal('تم ربط الجهاز',`<div style="line-height:2.1;text-align:center"><p>تم استرجاع بيانات العيادة وحفظها على هذا الجهاز.</p><p>يمكنك الآن تسجيل الدخول والعمل من هذا الجهاز.</p><div class="modal-foot" style="justify-content:center"><button class="btn btn-primary" onclick="finishClinicSetup()">متابعة</button></div></div>`);return false;}if(!name||!doctor){toast('اسم العيادة واسم الطبيب مطلوبان','err');return false;}applyCountryProfile(country);DB.settings={...DB.settings,clinicName:name,doctorName:doctor,phone:$('#setup-phone').value.trim(),city:$('#setup-city').value.trim(),address:$('#setup-address').value.trim(),commercialReg:$('#setup-cr').value.trim(),vatNumber:$('#setup-vat').value.trim(),licenseNumber:$('#setup-license').value.trim(),clinicCode:newClinicCode(),clinicRegistered:true,lastGoogleUid:googleUser.uid,lastGoogleEmail:googleUser.email||'',securityEnabled:true};await persistDB();$('#brand-name').textContent=DB.settings.clinicName;closeModal();openModal('تم تسجيل العيادة',`<div style="line-height:2.1;text-align:center"><p>تم حفظ بيانات العيادة على هذا الجهاز.</p><p>رمز العيادة الخاص بك:</p><div style="font-size:24px;font-weight:900;letter-spacing:2px;padding:14px;background:var(--gray-light);border-radius:10px;direction:ltr">${esc(DB.settings.clinicCode)}</div><p class="hint">احتفظ بالرمز. عند ربط جهاز آخر يجب أن يكون Firestore والمزامنة مفعّلين.</p><div class="modal-foot" style="justify-content:center"><button class="btn btn-soft" onclick="copyClinicCode()">📋 نسخ الرمز</button><button class="btn btn-primary" onclick="finishClinicSetup()">متابعة</button></div></div>`);return false;}
+
+
+/* ============================================================ ٤.١ لوحة التحكم */
+function renderDashboard(){
+  const today=DB.appointments.filter(a=>isToday(a.dateTime)&&a.status!=='ملغى').sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+  const now=new Date(),ms=new Date(now.getFullYear(),now.getMonth(),1),me=new Date(now.getFullYear(),now.getMonth()+1,1);
+  const monthPaid=DB.invoices.filter(i=>new Date(i.date)>=ms&&new Date(i.date)<me).reduce((t,i)=>t+(i.paidAmount||0),0);
+  const dues=dueVaccines();
+  const lastInv=[...DB.invoices].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,4);
+  const todayQueue=DB.queue.filter(q=>toInputDate(q.date)===toInputDate(new Date())&&q.status==='انتظار').length;
+  const stockAlerts=DB.inventory.filter(x=>inventoryStatus(x)[1]!=='green').length;
+  const tiles=[['queue','🎫','الاستقبال والطابور','var(--blue-light)'],['announcements','📢','المناداة الصوتية','var(--amber-light)'],['patients','🐾','المرضى','var(--green-light)'],['appointments','📅','المواعيد','var(--blue-light)'],['invoices','🧾','الفواتير','var(--amber-light)'],['procedures','🩺','العمليات والتخدير','var(--danger-light)'],['inventory','💊','المخزون والصيدلية','var(--green-light)'],['expenses','💸','المصروفات','var(--danger-light)'],['records','📋','السجلات الطبية','var(--gray-light)'],['reports','📊','التقارير','var(--blue-light)'],['settings','⚙️','الإعدادات','var(--gray-light)']];
+  $('#view-dashboard').innerHTML=`
+  <div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div><h2 style="font-size:19px;font-weight:800">مرحباً ${esc(DB.settings.doctorName)} 👋</h2><div class="sub" style="margin-top:4px">${fmtDate(new Date())}</div></div>
+    <div style="flex:1"></div>
+    <button class="btn btn-soft" onclick="navigate('patients')">＋ مريض جديد</button>
+    <button class="btn btn-blue" onclick="openApptModal()">＋ موعد جديد</button>
+  </div>
+  <div class="grid cols-4">
+    <div class="card stat"><div class="s-ic" style="background:var(--blue-light)">📅</div><div><div class="s-num">${fmtNum(today.length)}</div><div class="s-lbl">مواعيد اليوم</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--green-light)">🐾</div><div><div class="s-num">${fmtNum(DB.patients.length)}</div><div class="s-lbl">إجمالي المرضى</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--amber-light)">💰</div><div><div class="s-num" style="font-size:17px">${money(monthPaid)}</div><div class="s-lbl">المحصَّل هذا الشهر</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--danger-light)">💉</div><div><div class="s-num">${fmtNum(dues.length)}</div><div class="s-lbl">تطعيمات مستحقة خلال ٧ أيام</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--gray-light)">🎫</div><div><div class="s-num">${fmtNum(todayQueue)}</div><div class="s-lbl">في طابور الانتظار</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--danger-light)">📦</div><div><div class="s-num">${fmtNum(stockAlerts)}</div><div class="s-lbl">تنبيهات المخزون</div></div></div>
+  </div>
+  <div class="card"><h3>⚡ الوصول السريع</h3><div class="tiles">${tiles.map(t=>`<div class="tile" onclick="navigate('${t[0]}')"><div class="t-ic" style="background:${t[3]}">${t[1]}</div><b>${t[2]}</b></div>`).join('')}</div></div>
+  <div class="grid cols-3">
+    <div class="card"><h3>📅 مواعيد اليوم</h3>${today.length?today.map(a=>{const p=getPatient(a.patientId)||{};return `<div class="mini-row" onclick="openApptModal(getAppt('${a.id}'))">${avatar(p)}<div class="grow"><b>${esc(p.name)}</b> <span class="sub">${esc(a.type)}</span><div class="sub">${fmtTime(a.dateTime)} — ${esc((getOwner(p.ownerId)||{}).fullName||'')}</div></div>${badge(a.status,APPT_ST[a.status])}${isSoon(a)?badge('قريباً ⏰','amber pulse'):''}</div>`;}).join(''):'<div class="empty"><span class="big">🌤</span>لا توجد مواعيد اليوم</div>'}</div>
+    <div class="card"><h3>🧾 آخر الفواتير</h3>${lastInv.length?lastInv.map(i=>{const p=getPatient(i.patientId)||{};return `<div class="mini-row" onclick="viewInvoice('${i.id}')"><div class="grow"><b>${esc(i.number)}</b><div class="sub">${esc(p.name)} — ${fmtDateShort(i.date)}</div></div><b>${money(i.totalAmount)}</b>${badge(i.paymentStatus,PAY_ST[i.paymentStatus])}</div>`;}).join(''):'<div class="empty">لا فواتير بعد</div>'}</div>
+    <div class="card"><h3>💉 تذكيرات التطعيم</h3>${dues.length?dues.map(r=>{const p=getPatient(r.patientId)||{};return `<div class="mini-row" onclick="openPatientFile('${p.id}')">${avatar(p)}<div class="grow"><b>${esc(p.name)}</b><div class="sub">${esc(r.description)}</div></div>${isOverdue(r)?badge('متأخر ⚠️','red'):badge(fmtDateShort(r.nextDueDate),'amber')}</div>`;}).join(''):'<div class="empty">لا تطعيمات مستحقة قريباً 🎉</div>'}</div>
+  </div>`;
+}
+
+/* ============================================================ ٤.٢ المرضى */
+function renderPatients(){
+  const box=$('#view-patients');
+  if(state.patientViewId){box.innerHTML=patientDetailHTML(state.patientViewId);return;}
+  const species=[...new Set(DB.patients.map(p=>p.species))];
+  box.innerHTML=`
+  <div class="toolbar">
+    <input class="input" style="max-width:300px" placeholder="🔍 بحث بالاسم / المالك / الهاتف / النوع…" value="${esc(state.patientsQuery)}" oninput="state.patientsQuery=this.value;updatePatientsList()">
+    <select class="input" style="max-width:160px" onchange="state.speciesFilter=this.value;updatePatientsList()">
+      <option value="الكل">كل الأنواع</option>${species.map(s=>`<option ${state.speciesFilter===s?'selected':''}>${esc(s)}</option>`).join('')}
+    </select>
+    <div class="spacer"></div>
+    <span class="sub" id="patients-count"></span>
+    <button class="btn btn-primary" onclick="openPatientForm()">＋ مريض جديد</button>
+  </div>
+  <div class="card" style="padding:6px 14px"><div id="patients-list"></div></div>`;
+  updatePatientsList();
+}
+function updatePatientsList(){
+  const q=state.patientsQuery.trim();
+  const list=DB.patients.filter(p=>{const o=getOwner(p.ownerId)||{};
+    const okQ=!q||p.name.includes(q)||p.species.includes(q)||(p.breed||'').includes(q)||(o.fullName||'').includes(q)||(o.phone||'').includes(q);
+    return okQ&&(state.speciesFilter==='الكل'||p.species===state.speciesFilter);})
+    .sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+  $('#patients-count').textContent=fmtNum(list.length)+' مريض';
+  $('#patients-list').innerHTML=list.length?`<table class="table"><thead><tr><th>المريض</th><th>النوع</th><th>العمر</th><th>الجنس</th><th>الوزن</th><th>المالك</th><th>آخر زيارة</th><th></th></tr></thead><tbody>
+  ${list.map(p=>{const o=getOwner(p.ownerId)||{},lv=lastVisit(p.id);return `<tr>
+    <td><div class="cell-main">${avatar(p)}<div><b>${esc(p.name)}</b><div class="sub">${esc(p.breed||'')}</div></div></div></td>
+    <td>${spIcon(p.species)} ${esc(p.species)}</td><td>${ageText(p.birthDate)}</td><td>${esc(p.gender||'—')}</td>
+    <td>${p.weight?fmtNum(p.weight)+' كجم':'—'}</td>
+    <td><b>${esc(o.fullName||'—')}</b><div class="sub">${esc(o.phone||'')}</div></td>
+    <td>${lv?fmtDateShort(lv):'—'}</td>
+    <td class="row-actions"><button class="icon-btn" title="فتح الملف" onclick="openPatientFile('${p.id}')">👁</button><button class="icon-btn" title="تعديل" onclick="openPatientForm('${p.id}')">✏️</button><button class="icon-btn danger" title="حذف" onclick="deletePatient('${p.id}')">🗑</button></td></tr>`;}).join('')}
+  </tbody></table>`:'<div class="empty"><span class="big">🐾</span>لا توجد نتائج مطابقة</div>';
+}
+function openPatientFile(id){state.patientViewId=id;renderPatients();}
+function patientDetailHTML(pid){
+  const p=getPatient(pid);if(!p)return '';
+  const o=getOwner(p.ownerId)||{};
+  const recs=DB.medicalRecords.filter(r=>r.patientId===pid).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const appts=DB.appointments.filter(a=>a.patientId===pid).sort((a,b)=>new Date(b.dateTime)-new Date(a.dateTime));
+  const invs=DB.invoices.filter(i=>i.patientId===pid).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return `
+  <button class="btn btn-ghost" onclick="state.patientViewId=null;renderPatients()">‹ العودة لقائمة المرضى</button>
+  <div class="detail-grid">
+    <div class="card patient-head">
+      ${avatar(p,'lg')}
+      <div style="flex:1;min-width:200px">
+        <h2 style="font-size:21px;font-weight:800">${esc(p.name)}</h2>
+        <div class="chips-row">
+          <span class="chip-info">${spIcon(p.species)} ${esc(p.species)}${p.breed?' · '+esc(p.breed):''}</span>
+          <span class="chip-info">🎂 ${ageText(p.birthDate)}</span>
+          <span class="chip-info">${p.gender==='ذكر'?'♂':'♀'} ${esc(p.gender||'—')}</span>
+          <span class="chip-info">⚖️ ${p.weight?fmtNum(p.weight)+' كجم':'—'}</span>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="openApptModal(null,null,'${pid}')">＋ موعد</button>
+          <button class="btn btn-blue" onclick="openRecordModal(null,'${pid}')">＋ سجل طبي</button>
+          <button class="btn btn-soft" onclick="openInvoiceModal(null,'${pid}')">＋ فاتورة</button>
+          <button class="btn btn-ghost" onclick="openPatientForm('${pid}')">✏️ تعديل</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><h3>👤 المالك</h3>
+      <b style="font-size:15px">${esc(o.fullName||'—')}</b>
+      <div class="sub" style="margin-top:8px;line-height:2.1">📞 ${esc(o.phone||'—')}<br>📍 ${esc(o.address||'بدون عنوان')}</div>
+    </div>
+  </div>
+  <div class="detail-cols">
+    <div class="card"><h3>📋 السجل الطبي <span class="spacer"></span><button class="btn btn-soft" onclick="openRecordModal(null,'${pid}')">＋</button></h3>
+      ${recs.length?recs.map(r=>`<div style="border-bottom:1px solid var(--border);padding:10px 0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge(r.type,REC_ST[r.type]||'gray')}<span class="sub">${fmtDateShort(r.date)}</span></div><div style="margin-top:6px;line-height:1.9">${esc(r.description)}</div>${r.medication?`<div class="sub" style="margin-top:4px">💊 ${esc(r.medication)}</div>`:''}${r.nextDueDate?`<div style="margin-top:6px">${isOverdue(r)?badge('تطعيم متأخر: '+fmtDateShort(r.nextDueDate),'red'):badge('التطعيم القادم: '+fmtDateShort(r.nextDueDate),'amber')}</div>`:''}</div>`).join(''):'<div class="empty">لا سجلات بعد</div>'}
+    </div>
+    <div class="card"><h3>📅 الزيارات والمواعيد <span class="spacer"></span><button class="btn btn-soft" onclick="openApptModal(null,null,'${pid}')">＋</button></h3>
+      ${appts.length?appts.map(a=>`<div class="mini-row" onclick="openApptModal(getAppt('${a.id}'))"><div class="grow"><b>${fmtDateShort(a.dateTime)}</b> <span class="sub">${fmtTime(a.dateTime)}</span><div class="sub">${esc(a.type)}</div></div>${badge(a.status,APPT_ST[a.status])}</div>`).join(''):'<div class="empty">لا مواعيد بعد</div>'}
+    </div>
+    <div class="card"><h3>🧾 الفواتير <span class="spacer"></span><button class="btn btn-soft" onclick="openInvoiceModal(null,'${pid}')">＋</button></h3>
+      ${invs.length?invs.map(i=>`<div class="mini-row" onclick="viewInvoice('${i.id}')"><div class="grow"><b>${esc(i.number)}</b><div class="sub">${fmtDateShort(i.date)}</div></div><b>${money(i.totalAmount)}</b>${badge(i.paymentStatus,PAY_ST[i.paymentStatus])}</div>`).join(''):'<div class="empty">لا فواتير بعد</div>'}
+    </div>
+  </div>`;
+}
+function openPatientForm(id){
+  const p=id?getPatient(id):null;
+  const species=['قط','كلب','طائر','أرنب','هامستر','سلحفاة','أخرى'];
+  openModal(p?'تعديل بيانات المريض':'إضافة مريض جديد',`
+  <form onsubmit="return savePatient(event)">
+    <input type="hidden" id="pf-id" value="${p?p.id:''}">
+    <div class="field"><label>المالك *</label>
+      <select id="pf-owner" class="input" onchange="document.getElementById('new-owner-box').style.display=this.value==='__new'?'block':'none'">
+        <option value="__new">➕ مالك جديد…</option>
+        ${DB.owners.map(o=>`<option value="${o.id}" ${p&&p.ownerId===o.id?'selected':''}>${esc(o.fullName)} — ${esc(o.phone)}</option>`).join('')}
+      </select>
+      <div id="new-owner-box" style="display:${p?'none':'block'};margin-top:10px;padding:12px;background:var(--bg);border-radius:12px">
+        <div class="field"><label>اسم المالك *</label><input id="no-name" class="input"></div>
+        <div class="grid cols-2">
+          <div class="field"><label>رقم الجوال *</label><input id="no-phone" class="input" inputmode="tel" placeholder="05xxxxxxxx"></div>
+          <div class="field"><label>رقم الهوية / الإقامة</label><input id="no-id" class="input" inputmode="numeric" maxlength="10" placeholder="10 أرقام"></div>
+        </div>
+        <div class="field" style="margin:0"><label>العنوان (اختياري)</label><input id="no-address" class="input"></div>
+      </div>
+    </div>
+    <div class="grid cols-2">
+      <div class="field"><label>اسم الحيوان *</label><input id="pf-name" class="input" value="${esc(p?.name||'')}" required></div>
+      <div class="field"><label>النوع *</label><select id="pf-species" class="input">${species.map(s=>`<option ${p&&p.species===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>السلالة</label><input id="pf-breed" class="input" value="${esc(p?.breed||'')}"></div>
+      <div class="field"><label>تاريخ الميلاد</label><input type="date" id="pf-birth" class="input" value="${p&&p.birthDate?toInputDate(p.birthDate):''}"><div class="hint">يُحسب العمر تلقائياً</div></div>
+      <div class="field"><label>الجنس</label><select id="pf-gender" class="input"><option ${p?.gender==='ذكر'?'selected':''}>ذكر</option><option ${p?.gender==='أنثى'?'selected':''}>أنثى</option></select></div>
+      <div class="field"><label>الوزن (كجم)</label><input type="number" step="0.01" min="0" id="pf-weight" class="input" value="${p?.weight??''}"></div>
+    </div>
+    <div class="field"><label>صورة (اختياري)</label>
+      <div style="display:flex;gap:12px;align-items:center">
+        <input type="file" id="pf-photo" accept="image/*" class="input" style="flex:1" data-url="${esc(p?.photoPath||'')}" onchange="onPhotoPick(this)">
+        <span id="photo-preview">${p&&p.photoPath?`<img src="${p.photoPath}" style="width:46px;height:46px;border-radius:12px;object-fit:cover">`:''}</span>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div>
+  </form>`);
+}
+function onPhotoPick(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{inp.dataset.url=e.target.result;$('#photo-preview').innerHTML=`<img src="${e.target.result}" style="width:46px;height:46px;border-radius:12px;object-fit:cover">`;};r.readAsDataURL(f);}
+function savePatient(e){e.preventDefault();
+  const id=$('#pf-id').value,name=$('#pf-name').value.trim();
+  if(!name){toast('اسم المريض إلزامي','err');return false;}
+  let ownerId=$('#pf-owner').value;
+  if(ownerId==='__new'){const fn=$('#no-name').value.trim(),ph=$('#no-phone').value.trim();
+    if(!fn||!ph){toast('أكمل اسم المالك وهاتفه','err');return false;}
+    const ownerIdNumber=$('#no-id').value.trim();
+    if(ownerIdNumber&&(!/^\d{10}$/.test(ownerIdNumber))){toast('رقم الهوية أو الإقامة يجب أن يتكون من 10 أرقام','err');return false;}
+    const o={id:uid(),fullName:fn,phone:ph,idNumber:ownerIdNumber,address:$('#no-address').value.trim()};DB.owners.push(o);ownerId=o.id;}
+  const data={name,species:$('#pf-species').value,breed:$('#pf-breed').value.trim(),
+    birthDate:$('#pf-birth').value?new Date($('#pf-birth').value+'T12:00').toISOString():'',
+    gender:$('#pf-gender').value,weight:parseFloat($('#pf-weight').value)||0,
+    photoPath:$('#pf-photo').dataset.url||''};
+  if(id){Object.assign(getPatient(id),data);toast('تم تحديث بيانات المريض');}
+  else{DB.patients.push({id:uid(),ownerId,...data});toast('تمت إضافة المريض بنجاح');}
+  void persistDB();
+  closeModal();renderPatients();return false;}
+function deletePatient(id){const p=getPatient(id);
+  confirmDialog(`سيتم حذف المريض «<b>${esc(p.name)}</b>» نهائياً مع جميع مواعيده وسجلاته الطبية وفواتيره.<br>هل أنت متأكد؟`,()=>{
+    DB.appointments=DB.appointments.filter(a=>a.patientId!==id);
+    DB.medicalRecords=DB.medicalRecords.filter(r=>r.patientId!==id);
+    DB.invoices=DB.invoices.filter(i=>i.patientId!==id);
+    DB.patients=DB.patients.filter(x=>x.id!==id);
+    state.patientViewId=null;void persistDB();renderPatients();toast('تم حذف المريض');});}
+
+/* ============================================================ ٤.٣ المناداة الصوتية */
+function availableVoices(){return 'speechSynthesis' in window?window.speechSynthesis.getVoices().filter(v=>v.lang&&(/^ar/i.test(v.lang)||/arab/i.test(v.name))).sort((a,b)=>(a.lang+a.name).localeCompare(b.lang+b.name)):[];}
+function renderAnnouncements(){const hist=[...DB.announcements].slice(-12).reverse();$('#view-announcements').innerHTML=`<div class="grid cols-2"><div class="card"><h3>📢 إنشاء مناداة</h3><div class="field"><label>النص المطلوب نطقه</label><textarea id="announce-text" class="input" style="min-height:150px;font-size:18px;line-height:2" placeholder="مثال: نرجو من صاحب الحيوان لولو التوجه إلى غرفة الكشف رقم 1">${esc(DB.settings.lastAnnouncement||'')}</textarea></div><div class="field"><label>الصوت العربي</label><select id="announce-voice" class="input"><option value="">الصوت العربي الافتراضي</option></select><div class="hint">يتم اختيار أفضل صوت عربي مثبت على الجهاز تلقائياً.</div></div><div class="grid cols-2"><div class="field"><label>سرعة النطق</label><input id="announce-rate" type="range" min="0.55" max="1.15" step="0.05" value="${DB.settings.announcementRate||0.82}" oninput="$('#announce-rate-value').textContent=this.value"><div class="hint">الحالية: <b id="announce-rate-value">${DB.settings.announcementRate||0.82}</b> — السرعة الأقل أوضح</div></div><div class="field"><label>عدد مرات التكرار</label><select id="announce-repeat" class="input">${[1,2,3].map(n=>`<option value="${n}">${n} ${n===1?'مرة':'مرات'}</option>`).join('')}</select></div></div><div class="toolbar"><button class="btn btn-primary" onclick="speakAnnouncement()">🔊 تشغيل المناداة</button><button class="btn btn-ghost" onclick="stopAnnouncement()">⏹ إيقاف</button><button class="btn btn-soft" onclick="testAnnouncement()">🎧 اختبار الصوت</button></div><div class="sub" style="line-height:2">الصوت يعمل بأعلى مستوى يسمح به المتصفح. ارفع صوت الجهاز أو السماعات للحصول على صوت أعلى.</div></div><div class="card"><h3>📋 سجل المناداة <span class="spacer"></span><button class="btn btn-ghost" onclick="clearAnnouncements()">مسح السجل</button></h3>${hist.length?hist.map(h=>`<div class="mini-row"><div class="grow"><b>${esc(h.text)}</b><div class="sub">${fmtDateShort(h.date)} — ${fmtTime(h.date)} · ${fmtNum(h.repeat||1)} مرة</div></div><button class="icon-btn" title="إعادة التشغيل" onclick="speakText(${JSON.stringify(h.text)},${Number(h.repeat||1)})">🔊</button></div>`).join(''):'<div class="empty"><span class="big">📢</span>لا توجد مناداة سابقة</div>'}</div></div>`;populateAnnouncementVoices();if('speechSynthesis' in window)window.speechSynthesis.onvoiceschanged=populateAnnouncementVoices;}
+function populateAnnouncementVoices(){const sel=$('#announce-voice');if(!sel)return;const current=DB.settings.announcementVoice||'';const voices=availableVoices();sel.innerHTML='<option value="">الصوت العربي الافتراضي</option>'+voices.map((v,i)=>`<option value="${i}" ${String(i)===String(current)?'selected':''}>${esc(v.name)} — ${esc(v.lang)}</option>`).join('');}
+function speakText(text,repeat=1){if(!('speechSynthesis' in window)){toast('المتصفح لا يدعم النطق الصوتي','err');return;}const clean=String(text||'').replace(/<[^>]*>/g,'').trim();if(!clean){toast('اكتب نص المناداة أولاً','err');return;}stopAnnouncement();const voices=availableVoices(),idx=$('#announce-voice')?.value??DB.settings.announcementVoice??'';const voice=voices[Number(idx)]||voices.find(v=>/^ar-SA/i.test(v.lang))||voices[0];let n=0;const next=()=>{if(n>=repeat)return;const u=new SpeechSynthesisUtterance(clean);u.lang=voice?.lang||'ar-SA';if(voice)u.voice=voice;u.volume=1;u.rate=Number($('#announce-rate')?.value||DB.settings.announcementRate||0.82);u.pitch=1;u.onend=()=>{n++;setTimeout(next,350);};window.speechSynthesis.speak(u);};next();}
+function speakAnnouncement(){const text=$('#announce-text')?.value.trim();const repeat=Number($('#announce-repeat')?.value||1);if(!text){toast('اكتب نص المناداة أولاً','err');return;}DB.settings.lastAnnouncement=text;DB.settings.announcementRate=Number($('#announce-rate').value)||0.82;DB.settings.announcementVoice=$('#announce-voice').value;DB.announcements.push({id:uid(),text,date:new Date().toISOString(),repeat});if(DB.announcements.length>50)DB.announcements=DB.announcements.slice(-50);void persistDB();speakText(text,repeat);renderAnnouncements();toast('بدأت المناداة الصوتية');}
+function testAnnouncement(){speakText('نرجو من الزوار الكرام الانتظار، سيتم خدمتكم قريباً',1);}
+function stopAnnouncement(){if('speechSynthesis' in window)window.speechSynthesis.cancel();}
+function clearAnnouncements(){confirmDialog('هل تريد مسح سجل المناداة؟',()=>{DB.announcements=[];void persistDB();renderAnnouncements();toast('تم مسح السجل');});}
+function announcePatient(id){const p=getPatient(id)||{},o=getOwner(p.ownerId)||{};const text=`نرجو من صاحب الحيوان ${p.name||''}، ${o.fullName||''}، التوجه إلى غرفة الكشف`;speakText(text,1);}
+
+/* ============================================================ ٤.٣ الاستقبال وطابور الانتظار */
+function queueForDay(){const d=toInputDate(state.queueDate);return DB.queue.filter(q=>toInputDate(q.date)===d).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));}
+function renderQueue(){
+  const list=queueForDay();
+  $('#view-queue').innerHTML=`
+  <div class="toolbar"><button class="btn btn-ghost" onclick="queueShift(-1)">‹</button><button class="btn btn-ghost" onclick="state.queueDate=new Date();renderQueue()">اليوم</button><button class="btn btn-ghost" onclick="queueShift(1)">›</button><b>${fmtDate(state.queueDate)}</b><div class="spacer"></div><button class="btn btn-primary" onclick="openQueueModal()">＋ تسجيل حضور</button></div>
+  <div class="grid cols-4"><div class="card stat"><div class="s-ic" style="background:var(--blue-light)">🎫</div><div><div class="s-num">${fmtNum(list.length)}</div><div class="s-lbl">إجمالي الحضور</div></div></div><div class="card stat"><div class="s-ic" style="background:var(--amber-light)">⏳</div><div><div class="s-num">${fmtNum(list.filter(q=>q.status==='انتظار').length)}</div><div class="s-lbl">في الانتظار</div></div></div><div class="card stat"><div class="s-ic" style="background:var(--green-light)">🩺</div><div><div class="s-num">${fmtNum(list.filter(q=>q.status==='داخل الكشف').length)}</div><div class="s-lbl">داخل الكشف</div></div></div><div class="card stat"><div class="s-ic" style="background:var(--gray-light)">✓</div><div><div class="s-num">${fmtNum(list.filter(q=>q.status==='مكتمل').length)}</div><div class="s-lbl">مكتمل</div></div></div></div>
+  <div class="card" style="padding:6px 14px">${list.length?`<table class="table"><thead><tr><th>الرقم</th><th>المريض والمالك</th><th>نوع الزيارة</th><th>الأولوية</th><th>الحالة</th><th></th></tr></thead><tbody>${list.map((q,i)=>{const p=getPatient(q.patientId)||{},o=getOwner(p.ownerId)||{};return `<tr><td><b>#${fmtNum(i+1)}</b></td><td><div class="cell-main">${avatar(p)}<div><b>${esc(p.name||'—')}</b><div class="sub">${esc(o.fullName||'')} · ${esc(o.phone||'')}</div></div></div></td><td>${esc(q.type||'كشف')}</td><td>${badge(q.priority||'عادي',q.priority==='عاجل'?'red':q.priority==='كبير سن'?'amber':'blue')}</td><td><select class="input" style="width:135px;padding:6px 8px" onchange="setQueueStatus('${q.id}',this.value)">${['انتظار','داخل الكشف','مكتمل','ملغى'].map(s=>`<option ${q.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="row-actions"><button class="icon-btn" title="طباعة إيصال الحجز" onclick="printQueueReceipt('${q.id}')">🖨</button><button class="icon-btn" title="مناداة" onclick="announcePatient('${q.patientId}')">📢</button><button class="icon-btn" onclick="openQueueModal('${q.id}')">✏️</button><button class="icon-btn danger" onclick="deleteQueue('${q.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty"><span class="big">🎫</span>لا يوجد حضور مسجل لهذا اليوم</div>'}</div>`;
+}
+function queueShift(dir){state.queueDate.setDate(state.queueDate.getDate()+dir);renderQueue();}
+function queueReceiptHTML(q,qr=''){const p=getPatient(q.patientId)||{},o=getOwner(p.ownerId)||{},st=DB.settings,number=q.number||('RES-'+String((DB.queue.indexOf(q)+1)).padStart(5,'0'));return `<div class="print-invoice" dir="rtl"><div class="pi-head"><div style="display:flex;gap:14px;align-items:center">${st.logoData?`<img src="${st.logoData}" style="width:70px;height:70px;object-fit:contain">`:''}<div><h2>${esc(st.clinicName)}</h2><div class="pi-sub">${esc(st.doctorName)} · ${esc(st.phone||'')}</div><div class="pi-sub">${esc(st.address||'')}${st.city?' · '+esc(st.city):''}</div></div></div><div class="pi-meta"><b>إيصال حجز</b><div>${esc(number)}</div></div></div><h2 style="text-align:center;margin:20px 0;color:var(--green)">تأكيد موعد / حجز</h2><div class="pi-parties"><div>المريض: <b>${esc(p.name||'—')}</b> (${esc(p.species||'—')})</div><div>المالك: <b>${esc(o.fullName||'—')}</b> · ${esc(o.phone||'')}</div></div><table class="pi-table" style="margin-top:18px"><tbody><tr><th>التاريخ</th><td>${fmtDate(q.date)}</td></tr><tr><th>النوع</th><td>${esc(q.type||'كشف')}</td></tr><tr><th>الأولوية</th><td>${esc(q.priority||'عادي')}</td></tr><tr><th>الحالة</th><td>${esc(q.status||'انتظار')}</td></tr></tbody></table>${qr?`<div style="text-align:center;margin:20px"><img src="${qr}" alt="QR الحجز" style="width:150px;height:150px"><div class="hint">رمز الحجز — ليس فاتورة ضريبية</div></div>`:'<div class="hint" style="margin-top:20px">رمز الحجز سيظهر عند الطباعة إذا كان الاتصال متاحًا.</div>'}<p style="line-height:2;margin-top:22px">ملاحظات: ${esc(q.notes||'—')}</p><div class="pi-foot">يرجى الحضور في الموعد المحدد — ${esc(st.clinicName)}</div></div>`;}
+async function printQueueReceipt(id){const q=DB.queue.find(x=>x.id===id);if(!q)return;const p=getPatient(q.patientId)||{},o=getOwner(p.ownerId)||{},payload=JSON.stringify({type:'clinic-reservation',clinic:DB.settings.clinicCode||DB.settings.clinicName,number:q.number||id,patient:p.name||'',species:p.species||'',owner:o.fullName||'',date:q.date,visit:q.type||'كشف'});let qr='';try{if(window.QRCode){const box=document.createElement('div');new QRCode(box,{text:payload,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});const canvas=box.querySelector('canvas');qr=canvas?.toDataURL('image/png')||'';}}catch(err){console.warn('Reservation QR unavailable',err);}$('#print-area').innerHTML=queueReceiptHTML(q,qr);window.print();}
+function openQueueModal(id){const q=id?DB.queue.find(x=>x.id===id):null;openModal(q?'تعديل حضور':'تسجيل حضور جديد',`<form onsubmit="return saveQueue(event)"><input type="hidden" id="qf-id" value="${q?.id||''}"><div class="field"><label>المريض *</label><select id="qf-patient" class="input" required>${patientSelect(q?.patientId,false)}</select></div><div class="grid cols-2"><div class="field"><label>التاريخ</label><input type="date" id="qf-date" class="input" value="${q?toInputDate(q.date):toInputDate(new Date())}" required></div><div class="field"><label>نوع الزيارة</label><select id="qf-type" class="input">${['كشف','تطعيم','متابعة','تحاليل','عملية','استلام دواء','أخرى'].map(s=>`<option ${q?.type===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>الأولوية</label><select id="qf-priority" class="input">${['عادي','كبير سن','عاجل'].map(s=>`<option ${q?.priority===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>الحالة</label><select id="qf-status" class="input">${['انتظار','داخل الكشف','مكتمل','ملغى'].map(s=>`<option ${q?.status===s?'selected':''}>${s}</option>`).join('')}</select></div></div><div class="field"><label>ملاحظات</label><textarea id="qf-notes" class="input">${esc(q?.notes||'')}</textarea></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`);}
+function saveQueue(e){e.preventDefault();const id=$('#qf-id').value,pid=$('#qf-patient').value;if(!pid){toast('اختر المريض','err');return false;}const existing=id?DB.queue.find(q=>q.id===id):null,data={patientId:pid,date:new Date($('#qf-date').value+'T08:00').toISOString(),type:$('#qf-type').value,priority:$('#qf-priority').value,status:$('#qf-status').value,notes:$('#qf-notes').value.trim(),number:existing?.number||'RES-'+String(1000+DB.queue.length+1).padStart(5,'0'),createdAt:existing?.createdAt||new Date().toISOString()};let saved;if(id){Object.assign(existing,data);saved=existing;}else{saved={id:uid(),...data};DB.queue.push(saved);}void persistDB();closeModal();renderQueue();toast('تم حفظ الحضور');openModal('تم تسجيل الحجز',`<p style="line-height:2">تم حفظ الحجز رقم <b>${esc(saved.number)}</b>. يمكنك طباعة ورقة الحجز الآن.</p><div class="modal-foot"><button class="btn btn-primary" onclick="closeModal();printQueueReceipt('${saved.id}')">🖨 طباعة ورقة الحجز</button><button class="btn btn-ghost" onclick="closeModal()">إغلاق</button></div>`);return false;}
+function setQueueStatus(id,status){const q=DB.queue.find(x=>x.id===id);if(q){q.status=status;void persistDB();renderQueue();}}
+function deleteQueue(id){confirmDialog('هل تريد حذف سجل الحضور؟',()=>{DB.queue=DB.queue.filter(x=>x.id!==id);void persistDB();renderQueue();toast('تم حذف الحضور');});}
+
+/* ============================================================ ٤.٣ المواعيد */
+function renderAppointments(){
+  $('#view-appointments').innerHTML=`
+  <div class="toolbar">
+    <div class="seg"><button class="${state.calMode==='يوم'?'active':''}" onclick="setCalMode('يوم')">عرض يومي</button><button class="${state.calMode==='أسبوع'?'active':''}" onclick="setCalMode('أسبوع')">عرض أسبوعي</button></div>
+    <button class="btn btn-ghost" onclick="calShift(-1)">‹</button>
+    <button class="btn btn-ghost" onclick="state.calDate=new Date();renderAppointments()">اليوم</button>
+    <button class="btn btn-ghost" onclick="calShift(1)">›</button>
+    <b style="font-size:14.5px">${calLabel()}</b>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openApptModal()">＋ موعد جديد</button>
+  </div>
+  <div class="card">${state.calMode==='يوم'?dayViewHTML():weekViewHTML()}</div>`;
+}
+function setCalMode(m){state.calMode=m;renderAppointments();}
+function calShift(dir){state.calDate.setDate(state.calDate.getDate()+(state.calMode==='يوم'?dir:7*dir));renderAppointments();}
+function calLabel(){if(state.calMode==='يوم')return fmtDate(state.calDate);
+  const s=startOfWeek(state.calDate),e=new Date(s);e.setDate(e.getDate()+6);return fmtDateShort(s)+' — '+fmtDateShort(e);}
+function apptChipHTML(a){const p=getPatient(a.patientId)||{},c=conflictOf(a);
+  return `<div class="appt-chip st-${APPT_ST[a.status]}" onclick="event.stopPropagation();openApptModal(getAppt('${a.id}'))">
+    <b>${fmtTime(a.dateTime)}</b> <span>${esc(p.name||'؟')}</span> <span class="sub">${esc(a.type)}</span>
+    ${badge(a.status,APPT_ST[a.status])}${isSoon(a)?badge('قريباً ⏰','amber pulse'):''}${c?badge('تعارض ⚠️','red'):''}</div>`;}
+function dayViewHTML(){let h='';
+  for(let hr=9;hr<=20;hr++){
+    const list=DB.appointments.filter(a=>sameDay(a.dateTime,state.calDate)&&new Date(a.dateTime).getHours()===hr).sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+    h+=`<div class="slot"><div class="hour">${hourLabel(hr)}</div><div class="slot-body" onclick="slotClick(event,'${toInputDate(state.calDate)}','${String(hr).padStart(2,'0')}:00')">${list.map(apptChipHTML).join('')||'<div class="slot-empty">＋ انقر لحجز موعد</div>'}</div></div>`;}
+  return h;}
+function weekViewHTML(){const s=startOfWeek(state.calDate);let cols='';
+  for(let i=0;i<7;i++){const d=new Date(s);d.setDate(d.getDate()+i);
+    const list=DB.appointments.filter(a=>sameDay(a.dateTime,d)).sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+    cols+=`<div class="day-col ${isToday(d)?'today':''}"><div class="day-head" onclick="state.calDate=new Date('${toInputDate(d)}T12:00');setCalMode('يوم')">${new Intl.DateTimeFormat('ar-EG',{weekday:'long'}).format(d)}<b>${fmtDateShort(d)}</b></div>
+    ${list.map(a=>{const p=getPatient(a.patientId)||{};return `<div class="week-chip" style="border-inline-start-color:var(--${APPT_ST[a.status]==='blue'?'blue':APPT_ST[a.status]==='green'?'green':APPT_ST[a.status]==='red'?'danger':'gray'})" onclick="openApptModal(getAppt('${a.id}'))"><b>${fmtTime(a.dateTime)}</b> ${esc(p.name||'؟')}<div class="sub">${esc(a.type)} · ${badge(a.status,APPT_ST[a.status])}</div></div>`;}).join('')||'<div class="sub" style="text-align:center;padding:14px 0">—</div>'}</div>`;}
+  return `<div class="week-grid">${cols}</div>`;}
+function slotClick(e,dateStr,time){if(e.target.classList.contains('slot-body')||e.target.classList.contains('slot-empty'))openApptModal(null,dateStr+'T'+time);}
+function openApptModal(appt,prefillISO,presetPatient){
+  const base=appt?new Date(appt.dateTime):(prefillISO?new Date(prefillISO):new Date());
+  const types=['كشف','تطعيم','عملية','متابعة','تحاليل','أخرى'];
+  openModal(appt?'تفاصيل الموعد':'حجز موعد جديد',`
+  <form onsubmit="return saveAppt(event)">
+    <input type="hidden" id="af-id" value="${appt?appt.id:''}">
+    <div class="field"><label>المريض *</label><select id="af-patient" class="input" onchange="document.getElementById('new-patient-box').style.display=this.value==='__new'?'block':'none'">${patientSelect(appt?appt.patientId:presetPatient,true)}</select>
+      <div id="new-patient-box" style="display:none;margin-top:10px;padding:12px;background:var(--bg);border-radius:12px">
+        <div class="grid cols-2">
+          <div class="field"><label>اسم الحيوان *</label><input id="np-name" class="input"></div>
+          <div class="field"><label>النوع</label><select id="np-species" class="input"><option>قط</option><option>كلب</option><option>طائر</option><option>أرنب</option><option>أخرى</option></select></div>
+          <div class="field"><label>اسم المالك *</label><input id="np-oname" class="input"></div>
+          <div class="field"><label>جوال المالك *</label><input id="np-ophone" class="input" inputmode="tel" placeholder="05xxxxxxxx"></div>
+          <div class="field"><label>هوية / إقامة المالك</label><input id="np-oid" class="input" inputmode="numeric" maxlength="10"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid cols-2">
+      <div class="field"><label>التاريخ *</label><input type="date" id="af-date" class="input" value="${toInputDate(base)}" required></div>
+      <div class="field"><label>الوقت *</label><input type="time" id="af-time" class="input" value="${toInputTime(base)}" required></div>
+    </div>
+    <div class="field"><label>نوع الزيارة</label><select id="af-type" class="input">${types.map(t=>`<option ${appt&&appt.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    ${appt?`<div class="field"><label>الحالة</label><div class="status-pills">${Object.keys(APPT_ST).map(s=>`<button type="button" class="pill ${appt.status===s?'active':''}" data-s="${s}" onclick="pickStatus(this)">${s}</button>`).join('')}</div><input type="hidden" id="af-status" value="${esc(appt.status)}"></div>`:'<input type="hidden" id="af-status" value="مجدول">'}
+    <div class="field"><label>ملاحظات</label><textarea id="af-notes" class="input">${esc(appt?.notes||'')}</textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" type="submit">💾 حفظ</button>
+      ${appt?`<button class="btn btn-danger" type="button" onclick="deleteAppt('${appt.id}')">🗑 حذف</button>`:''}
+      <button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button>
+    </div>
+  </form>`);
+}
+function pickStatus(btn){btn.parentElement.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$('#af-status').value=btn.dataset.s;}
+function saveAppt(e){e.preventDefault();
+  const id=$('#af-id').value;let patientId=$('#af-patient').value;
+  if(patientId==='__new'){const n=$('#np-name').value.trim(),on=$('#np-oname').value.trim(),op=$('#np-ophone').value.trim();
+    if(!n||!on||!op){toast('أكمل بيانات المريض الجديد ومالكه','err');return false;}
+    const oid=$('#np-oid').value.trim();
+    if(oid&&(!/^\d{10}$/.test(oid))){toast('رقم الهوية أو الإقامة يجب أن يتكون من 10 أرقام','err');return false;}
+    const o={id:uid(),fullName:on,phone:op,idNumber:oid,address:''};DB.owners.push(o);
+    const np={id:uid(),ownerId:o.id,name:n,species:$('#np-species').value,breed:'',birthDate:'',gender:'',weight:0,photoPath:''};DB.patients.push(np);patientId=np.id;}
+  if(!patientId){toast('اختر المريض','err');return false;}
+  const dt=new Date($('#af-date').value+'T'+$('#af-time').value);
+  const status=$('#af-status').value||'مجدول';
+  const doSave=()=>{const data={patientId,dateTime:dt.toISOString(),type:$('#af-type').value,status,notes:$('#af-notes').value.trim()};
+    if(id)Object.assign(getAppt(id),data);else DB.appointments.push({id:uid(),...data});
+    void persistDB();
+    closeModal();renderAppointments();toast(id?'تم تحديث الموعد':'تم حجز الموعد بنجاح');};
+  const conflict=DB.appointments.find(a=>a.id!==id&&a.status!=='ملغى'&&Math.abs(new Date(a.dateTime)-dt)<1800000);
+  if(conflict){const cp=getPatient(conflict.patientId)||{};closeModal();
+    confirmDialog(`⚠️ <b>تعارض في المواعيد:</b> يوجد موعد للمريض «${esc(cp.name||'')}» الساعة ${fmtTime(conflict.dateTime)}.<br>هل تريد الحفظ رغم التعارض؟`,doSave);}
+  else doSave();
+  return false;}
+function deleteAppt(id){closeModal();confirmDialog('هل تريد حذف هذا الموعد نهائياً؟',()=>{DB.appointments=DB.appointments.filter(a=>a.id!==id);void persistDB();renderAppointments();toast('تم حذف الموعد');});}
+
+/* ============================================================ ٤.٤ الفواتير */
+function renderInvoices(){
+  const list=DB.invoices.filter(i=>state.invStatusFilter==='الكل'||i.paymentStatus===state.invStatusFilter).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  $('#view-invoices').innerHTML=`
+  <div class="toolbar">
+    <select class="input" style="max-width:180px" onchange="state.invStatusFilter=this.value;renderInvoices()">
+      <option value="الكل">كل الحالات</option>${['مدفوع','جزئي','غير مدفوع'].map(s=>`<option ${state.invStatusFilter===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+    <div class="spacer"></div>
+    <b>${fmtNum(list.length)} فاتورة</b>
+    <button class="btn btn-primary" onclick="openInvoiceModal()">＋ فاتورة جديدة</button>
+  </div>
+  <div class="card" style="padding:6px 14px">${list.length?`<table class="table"><thead><tr><th>الرقم</th><th>التاريخ</th><th>المريض</th><th>البنود</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>
+  ${list.map(i=>{const p=getPatient(i.patientId)||{};return `<tr>
+    <td><b>${esc(i.number)}</b></td><td>${fmtDateShort(i.date)}</td>
+    <td><div class="cell-main">${avatar(p)}<div><b>${esc(p.name)}</b><div class="sub">${esc((getOwner(p.ownerId)||{}).fullName||'')}</div></div></div></td>
+    <td><span class="sub">${fmtNum(i.items.length)} بند — ${esc(i.items[0]?.description||'')}</span></td>
+    <td><b>${money(i.totalAmount)}</b>${(i.totalAmount-(i.paidAmount||0))>0?`<div class="sub">متبقٍ ${money(i.totalAmount-(i.paidAmount||0))}</div>`:''}</td>
+    <td>${badge(i.paymentStatus,PAY_ST[i.paymentStatus])}</td>
+    <td class="row-actions"><button class="icon-btn" title="عرض وطباعة" onclick="viewInvoice('${i.id}')">🖨</button>${i.paymentStatus!=='مدفوع'?`<button class="icon-btn" title="تحصيل دفعة" onclick="collectInvoice('${i.id}')">💰</button>`:''}<button class="icon-btn danger" title="حذف" onclick="deleteInvoice('${i.id}')">🗑</button></td></tr>`;}).join('')}
+  </tbody></table>`:'<div class="empty"><span class="big">🧾</span>لا توجد فواتير</div>'}</div>`;
+}
+function openInvoiceModal(inv,presetPatient){
+  const date=inv?toInputDate(inv.date):toInputDate(new Date());
+  openModal(inv?'تعديل الفاتورة':'فاتورة جديدة',`
+  <form onsubmit="return saveInvoice(event)">
+    <input type="hidden" id="if-id" value="${inv?inv.id:''}">
+    <div class="grid cols-2">
+      <div class="field"><label>المريض *</label><select id="if-patient" class="input">${patientSelect(inv?inv.patientId:presetPatient,false)}</select></div>
+      <div class="field"><label>التاريخ</label><input type="date" id="if-date" class="input" value="${date}"></div>
+      <div class="field"><label>حالة الدفع</label><select id="if-status" class="input"><option ${inv?.paymentStatus==='مدفوع'?'selected':''}>مدفوع</option><option ${inv?.paymentStatus==='جزئي'?'selected':''}>جزئي</option><option ${inv?.paymentStatus==='غير مدفوع'?'selected':''}>غير مدفوع</option></select></div>
+      <div class="field"><label>المبلغ المدفوع</label><input type="number" min="0" step="0.01" id="if-paid" class="input" value="${inv?.paidAmount??0}"><div class="hint">«مدفوع» = الإجمالي تلقائياً، «غير مدفوع» = صفر</div></div>
+    </div>
+  <div class="field"><label>بنود الفاتورة *</label><div id="inv-items"></div><button type="button" class="btn btn-soft" onclick="addInvRow()">＋ إضافة بند</button></div>
+    <div class="inv-total" style="display:block;text-align:left;line-height:2">الإجمالي قبل الضريبة: <b id="inv-subtotal" style="color:var(--text)">—</b><br>ضريبة القيمة المضافة (${fmtNum(taxRate())}%): <b id="inv-tax" style="color:var(--amber)">—</b><br>الإجمالي شامل الضريبة: <b id="inv-total" style="color:var(--green)">—</b></div>
+    <div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ الفاتورة</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div>
+  </form>`,true);
+  if(inv)inv.items.forEach(i=>addInvRow(i.description,i.price));else addInvRow();
+}
+function addInvRow(desc,price){const d=document.createElement('div');d.className='inv-row';
+  d.innerHTML=`<input class="input inv-desc" placeholder="وصف الخدمة / الدواء (كشف، تطعيم، عملية…)" value="${esc(desc||'')}"><input type="number" min="0" step="0.01" class="input inv-price" placeholder="السعر" value="${price??''}" oninput="updateInvTotal()"><button type="button" class="icon-btn danger" onclick="this.parentElement.remove();updateInvTotal()">✕</button>`;
+  $('#inv-items').appendChild(d);updateInvTotal();}
+function updateInvTotal(){let subtotal=0;$$('#inv-items .inv-row').forEach(r=>subtotal+=parseFloat(r.querySelector('.inv-price').value)||0);const tax=DB.settings.taxEnabled?Math.round(subtotal*taxRate())/100:0;$('#inv-subtotal').textContent=money(subtotal);$('#inv-tax').textContent=money(tax);$('#inv-total').textContent=money(subtotal+tax);}
+function saveInvoice(e){e.preventDefault();
+  const id=$('#if-id').value,patientId=$('#if-patient').value;
+  if(!patientId){toast('اختر المريض','err');return false;}
+  const items=[];$$('#inv-items .inv-row').forEach(r=>{const d=r.querySelector('.inv-desc').value.trim(),p=parseFloat(r.querySelector('.inv-price').value)||0;if(d)items.push({description:d,price:p});});
+  if(!items.length){toast('أضف بنداً واحداً على الأقل','err');return false;}
+  const subtotal=items.reduce((t,i)=>t+i.price,0);
+  const tax=DB.settings.taxEnabled?Math.round(subtotal*taxRate())/100:0;
+  const total=Math.round((subtotal+tax)*100)/100;
+  let status=$('#if-status').value,paid=parseFloat($('#if-paid').value)||0;
+  if(status==='مدفوع')paid=total;if(status==='غير مدفوع')paid=0;
+  paid=Math.max(0,Math.min(paid,total));if(status==='جزئي'&&paid>=total)status='مدفوع';
+  const dateVal=new Date(($('#if-date').value||toInputDate(new Date()))+'T12:00').toISOString();
+  if(id){Object.assign(DB.invoices.find(x=>x.id===id),{patientId,date:dateVal,items,subtotal,taxAmount:tax,taxEnabled:DB.settings.taxEnabled,totalAmount:total,paidAmount:paid,paymentStatus:status});}
+  else DB.invoices.push({id:uid(),number:'INV-'+String(1000+DB.invoices.length+1).padStart(5,'0'),patientId,date:dateVal,items,subtotal,taxAmount:tax,taxEnabled:DB.settings.taxEnabled,totalAmount:total,paidAmount:paid,paymentStatus:status});
+  void persistDB();
+  closeModal();renderInvoices();toast('تم حفظ الفاتورة');return false;}
+function deleteInvoice(id){confirmDialog('هل تريد حذف هذه الفاتورة نهائياً؟',()=>{DB.invoices=DB.invoices.filter(i=>i.id!==id);void persistDB();renderInvoices();toast('تم حذف الفاتورة');});}
+function collectInvoice(id){const inv=DB.invoices.find(i=>i.id===id);const rem=inv.totalAmount-(inv.paidAmount||0);
+  openModal('تحصيل دفعة',`<form onsubmit="return doCollect(event,'${id}')">
+    <p style="line-height:2">الفاتورة <b>${esc(inv.number)}</b> — المتبقي: <b style="color:var(--danger)">${money(rem)}</b></p>
+    <div class="field"><label>المبلغ المحصَّل</label><input type="number" id="collect-amt" class="input" min="0.01" max="${rem}" step="0.01" value="${rem}" required></div>
+    <div class="modal-foot"><button class="btn btn-primary" type="submit">✓ تأكيد التحصيل</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`);}
+function doCollect(e,id){e.preventDefault();const inv=DB.invoices.find(i=>i.id===id);
+  inv.paidAmount=Math.min((inv.paidAmount||0)+(parseFloat($('#collect-amt').value)||0),inv.totalAmount);
+  inv.paymentStatus=inv.paidAmount>=inv.totalAmount?'مدفوع':'جزئي';
+  void persistDB();closeModal();renderInvoices();toast('تم تسجيل الدفعة');return false;}
+function invoiceHTML(inv){const p=getPatient(inv.patientId)||{name:'—',species:''},o=getOwner(p.ownerId)||{},st=DB.settings,tot=invoiceTotals(inv);
+  return `<div class="print-invoice">
+  <div class="pi-head"><div style="display:flex;gap:14px;align-items:center">${st.logoData?`<img src="${st.logoData}" style="width:72px;height:72px;object-fit:contain">`:''}<div><h2>${esc(st.clinicName)}</h2><div class="pi-sub">${esc(st.doctorName)} · 📞 ${esc(st.phone)} · ${esc(st.address)}${st.city?' · '+esc(st.city):''}</div><div class="pi-sub">سجل تجاري: ${esc(st.commercialReg||'—')} · الرقم الضريبي: ${esc(st.vatNumber||'—')}</div></div></div>
+  <div class="pi-meta"><b>${esc(inv.number)}</b><div>${fmtDate(inv.date)}</div></div></div>
+  <div class="pi-parties"><div>المريض: <b>${esc(p.name)}</b> (${esc(p.species||'')})</div><div>المالك: <b>${esc(o.fullName||'—')}</b> · ${esc(o.phone||'')} · الهوية: ${esc(o.idNumber||'—')}</div></div>
+  <table class="pi-table"><thead><tr><th>البيان</th><th style="width:120px">السعر</th></tr></thead><tbody>${inv.items.map(i=>`<tr><td>${esc(i.description)}</td><td>${money(i.price)}</td></tr>`).join('')}</tbody></table>
+  <div class="pi-totals"><div>قبل الضريبة: ${money(tot.subtotal)}</div><div>الضريبة: ${money(tot.tax)}</div><div>الإجمالي: <b>${money(tot.total)}</b></div><div>المدفوع: ${money(inv.paidAmount||0)}</div><div>المتبقي: ${money(tot.total-(inv.paidAmount||0))}</div><div>الحالة: ${badge(inv.paymentStatus,PAY_ST[inv.paymentStatus])}</div></div>
+  <div class="pi-foot">شكراً لثقتكم — ${esc(st.clinicName)} 🐾</div></div>`;}
+function viewInvoice(id){const inv=DB.invoices.find(i=>i.id===id);
+  openModal('معاينة الفاتورة '+esc(inv.number),invoiceHTML(inv)+`<div class="modal-foot"><button class="btn btn-blue" onclick="printInvoice('${id}')">🖨 طباعة / تصدير</button><button class="btn btn-ghost" onclick="closeModal()">إغلاق</button></div>`,true);}
+function printInvoice(id){const inv=DB.invoices.find(i=>i.id===id);$('#print-area').innerHTML=invoiceHTML(inv);window.print();}
+
+/* ============================================================ ٤.٥ العمليات والتخدير وموافقة المالك */
+const PROC_STATUS={'مجدولة':'blue','جارية':'amber','مكتملة':'green','ملغاة':'gray'};
+function renderProcedures(){const list=[...DB.procedures].sort((a,b)=>new Date(b.date)-new Date(a.date));$('#view-procedures').innerHTML=`<div class="toolbar"><div class="spacer"></div><button class="btn btn-primary" onclick="openProcedureModal()">＋ عملية / تخدير جديد</button></div><div class="card" style="padding:6px 14px">${list.length?`<table class="table"><thead><tr><th>التاريخ</th><th>المريض</th><th>الإجراء</th><th>التخدير</th><th>الموافقة</th><th>الحالة</th><th></th></tr></thead><tbody>${list.map(x=>{const p=getPatient(x.patientId)||{};return `<tr><td>${fmtDateShort(x.date)}</td><td><div class="cell-main">${avatar(p)}<div><b>${esc(p.name||'—')}</b><div class="sub">${esc((getOwner(p.ownerId)||{}).fullName||'')}</div></div></div></td><td><b>${esc(x.procedureName)}</b><div class="sub">${esc(x.surgeon||'')}</div></td><td>${esc(x.anesthesiaType||'—')}<div class="sub">${esc(x.induction||'')}</div></td><td>${x.consentAccepted?badge('موقعة','green'):badge('غير مكتملة','red')}</td><td>${badge(x.status,PROC_STATUS[x.status]||'gray')}</td><td class="row-actions"><button class="icon-btn" onclick="openProcedureModal('${x.id}')">✏️</button><button class="icon-btn" title="طباعة الموافقة" onclick="printConsent('${x.id}')">🖨</button><button class="icon-btn danger" onclick="deleteProcedure('${x.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty"><span class="big">🩺</span>لا توجد عمليات أو سجلات تخدير</div>'}</div>`;}
+function openProcedureModal(id){const x=id?DB.procedures.find(p=>p.id===id):null;const p=getPatient(x?.patientId),o=p?getOwner(p.ownerId):null;openModal(x?'تعديل ملف العملية والتخدير':'ملف عملية وتخدير جديد',`<form onsubmit="return saveProcedure(event)"><input type="hidden" id="pr-id" value="${x?.id||''}"><div class="card" style="background:var(--bg);box-shadow:none"><h3>بيانات المريض</h3><div class="field"><label>المريض *</label><select id="pr-patient" class="input" onchange="fillConsentOwner(this.value)" required>${patientSelect(x?.patientId,false)}</select><div id="pr-owner-hint" class="hint">المالك: ${esc(o?.fullName||'—')} · ${esc(o?.phone||'')}</div></div><div class="grid cols-2"><div class="field"><label>اسم الإجراء *</label><input id="pr-name" class="input" value="${esc(x?.procedureName||'')}" placeholder="تعقيم، إزالة ورم، تنظيف أسنان..." required></div><div class="field"><label>الجراح / الطبيب</label><input id="pr-surgeon" class="input" value="${esc(x?.surgeon||DB.settings.doctorName||'')}"></div><div class="field"><label>التاريخ والوقت *</label><input type="datetime-local" id="pr-date" class="input" value="${x?toDateTimeLocal(x.date):toDateTimeLocal(new Date())}" required></div><div class="field"><label>الحالة</label><select id="pr-status" class="input">${Object.keys(PROC_STATUS).map(s=>`<option ${x?.status===s?'selected':''}>${s}</option>`).join('')}</select></div></div></div><div class="card" style="background:var(--bg);box-shadow:none"><h3>خطة التخدير والمراقبة</h3><div class="grid cols-2"><div class="field"><label>نوع التخدير *</label><select id="pr-anesthesia" class="input">${['موضعي','تهدئة','عام - استنشاقي','عام - وريدي','مختلط','بدون تخدير'].map(s=>`<option ${x?.anesthesiaType===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>الوزن وقت العملية (كجم)</label><input type="number" min="0" step="0.01" id="pr-weight" class="input" value="${x?.weight??p?.weight??''}"></div><div class="field"><label>أدوية ما قبل التخدير والجرعات</label><textarea id="pr-premed" class="input" placeholder="اسم الدواء — الجرعة — الطريق">${esc(x?.premedication||'')}</textarea></div><div class="field"><label>التحريض والجرعة</label><textarea id="pr-induction" class="input" placeholder="اسم الدواء — الجرعة — الوقت">${esc(x?.induction||'')}</textarea></div><div class="field"><label>المحافظة / الغاز والجرعة</label><textarea id="pr-maintenance" class="input">${esc(x?.maintenance||'')}</textarea></div><div class="field"><label>السوائل الوريدية</label><textarea id="pr-fluids" class="input">${esc(x?.fluids||'')}</textarea></div><div class="field"><label>العلامات الحيوية أثناء التخدير</label><textarea id="pr-vitals" class="input" placeholder="الوقت — النبض — التنفس — الحرارة — SpO₂ — الضغط">${esc(x?.vitals||'')}</textarea></div><div class="field"><label>الإفاقة والمضاعفات</label><textarea id="pr-recovery" class="input">${esc(x?.recovery||'')}</textarea></div></div></div><div class="card" style="background:var(--bg);box-shadow:none"><h3>موافقة المالك</h3><div class="grid cols-2"><div class="field"><label>اسم المالك *</label><input id="pr-owner" class="input" value="${esc(x?.ownerName||o?.fullName||'')}" required></div><div class="field"><label>رقم الهوية / الإقامة</label><input id="pr-owner-id" class="input" value="${esc(x?.ownerIdNumber||o?.idNumber||'')}" inputmode="numeric" maxlength="10"></div><div class="field"><label>اسم الحيوان للتأكيد</label><input id="pr-animal" class="input" value="${esc(x?.animalName||p?.name||'')}" required></div><div class="field"><label>تاريخ ووقت الموافقة</label><input type="datetime-local" id="pr-consent-date" class="input" value="${x?.consentDate?toDateTimeLocal(x.consentDate):''}"></div></div><p class="sub" style="line-height:2;margin-bottom:10px">أقر أنا مالك الحيوان بأن الطبيب شرح لي طبيعة الإجراء ومخاطر التخدير والبدائل المحتملة، وأوافق على إجراء العملية والتخدير وفق الخطة الموضحة، وأبلغت العيادة بأي أمراض أو أدوية معروفة.</p><label style="display:flex;gap:8px;align-items:center;font-weight:800"><input id="pr-consent" type="checkbox" ${x?.consentAccepted?'checked':''}> أوافق وأقر بصحة البيانات أعلاه *</label><div class="field" style="margin-top:12px"><label>التوقيع الإلكتروني النصي للمالك *</label><input id="pr-signature" class="input" value="${esc(x?.signature||'')}" placeholder="اكتب الاسم كما في الهوية" required></div></div><div class="field"><label>تعليمات ما بعد العملية / موعد المتابعة</label><textarea id="pr-aftercare" class="input">${esc(x?.aftercare||'')}</textarea></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ الملف والموافقة</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`,true);}
+function toDateTimeLocal(v){const d=new Date(v);if(Number.isNaN(d.getTime()))return '';return toInputDate(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function fillConsentOwner(pid){const p=getPatient(pid)||{},o=getOwner(p.ownerId)||{};const h=$('#pr-owner-hint');if(h)h.textContent=`المالك: ${o.fullName||'—'} · ${o.phone||''}`;const own=$('#pr-owner'),animal=$('#pr-animal');if(own&&!own.value)own.value=o.fullName||'';if(animal&&!animal.value)animal.value=p.name||'';}
+function saveProcedure(e){e.preventDefault();const id=$('#pr-id').value,pid=$('#pr-patient').value,consent=$('#pr-consent').checked,signature=$('#pr-signature').value.trim();if(!pid||!$('#pr-name').value.trim()){toast('أكمل بيانات المريض والإجراء','err');return false;}if(!consent||!signature){toast('لا يمكن حفظ العملية بدون موافقة وتوقيع المالك','err');return false;}const d={patientId:pid,procedureName:$('#pr-name').value.trim(),surgeon:$('#pr-surgeon').value.trim(),date:new Date($('#pr-date').value).toISOString(),status:$('#pr-status').value,anesthesiaType:$('#pr-anesthesia').value,weight:Number($('#pr-weight').value)||0,premedication:$('#pr-premed').value.trim(),induction:$('#pr-induction').value.trim(),maintenance:$('#pr-maintenance').value.trim(),fluids:$('#pr-fluids').value.trim(),vitals:$('#pr-vitals').value.trim(),recovery:$('#pr-recovery').value.trim(),ownerName:$('#pr-owner').value.trim(),ownerIdNumber:$('#pr-owner-id').value.trim(),animalName:$('#pr-animal').value.trim(),consentAccepted:true,consentDate:$('#pr-consent-date').value?new Date($('#pr-consent-date').value).toISOString():new Date().toISOString(),signature,aftercare:$('#pr-aftercare').value.trim()};if(id)Object.assign(DB.procedures.find(x=>x.id===id),d);else DB.procedures.push({id:uid(),...d});void persistDB();closeModal();renderProcedures();toast('تم حفظ ملف العملية وموافقة المالك');return false;}
+function deleteProcedure(id){confirmDialog('سيتم حذف ملف العملية وموافقة المالك. هل أنت متأكد؟',()=>{DB.procedures=DB.procedures.filter(x=>x.id!==id);void persistDB();renderProcedures();toast('تم حذف الملف');});}
+function printConsent(id){const x=DB.procedures.find(p=>p.id===id),p=getPatient(x.patientId)||{};$('#print-area').innerHTML=`<div class="print-invoice" dir="rtl"><h2>${esc(DB.settings.clinicName)}</h2><h3 style="margin:18px 0">موافقة مالك الحيوان على العملية والتخدير</h3><p>اسم المالك: <b>${esc(x.ownerName)}</b> — الهوية/الإقامة: <b>${esc(x.ownerIdNumber||'—')}</b></p><p>اسم الحيوان: <b>${esc(x.animalName||p.name||'—')}</b> — الإجراء: <b>${esc(x.procedureName)}</b></p><p>نوع التخدير: <b>${esc(x.anesthesiaType)}</b> — الطبيب: <b>${esc(x.surgeon||'—')}</b></p><p style="line-height:2.1;margin-top:18px">أقر أنا مالك الحيوان بأن الطبيب شرح لي طبيعة الإجراء ومخاطر التخدير والبدائل المحتملة، وأوافق على إجراء العملية والتخدير وفق الخطة الموضحة، وأبلغت العيادة بأي أمراض أو أدوية معروفة.</p><p style="margin-top:30px">اسم وتوقيع المالك: <b>${esc(x.signature)}</b></p><p>تاريخ الموافقة: ${fmtDate(x.consentDate)} — ${fmtTime(x.consentDate)}</p><p style="margin-top:60px">توقيع الطبيب: ____________________ &nbsp;&nbsp;&nbsp; توقيع المالك: ____________________</p></div>`;window.print();}
+
+/* ============================================================ ٤.٥ المخزون والصيدلية */
+function inventoryStatus(item){if(item.expiry&&new Date(item.expiry)<new Date())return ['منتهي','red'];if(item.expiry&&new Date(item.expiry)<new Date(Date.now()+30*86400000))return ['ينتهي قريباً','amber'];if(Number(item.quantity||0)<=Number(item.minQuantity||0))return ['منخفض','red'];return ['متوفر','green'];}
+function renderInventory(){const list=[...DB.inventory].sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));const low=list.filter(x=>inventoryStatus(x)[1]!=='green').length;$('#view-inventory').innerHTML=`<div class="toolbar"><div class="card stat" style="margin:0;padding:10px 16px"><div class="s-ic" style="background:var(--green-light);width:38px;height:38px;font-size:18px">📦</div><div><div class="s-num" style="font-size:18px">${fmtNum(list.length)}</div><div class="s-lbl">الأصناف</div></div></div><div class="card stat" style="margin:0;padding:10px 16px"><div class="s-ic" style="background:var(--danger-light);width:38px;height:38px;font-size:18px">⚠️</div><div><div class="s-num" style="font-size:18px">${fmtNum(low)}</div><div class="s-lbl">تنبيهات المخزون</div></div></div><div class="spacer"></div><button class="btn btn-primary" onclick="openInventoryModal()">＋ إضافة صنف</button></div><div class="card" style="padding:6px 14px">${list.length?`<table class="table"><thead><tr><th>الصنف</th><th>التصنيف</th><th>التشغيلة</th><th>الكمية</th><th>الحد الأدنى</th><th>الصلاحية</th><th>سعر البيع</th><th></th></tr></thead><tbody>${list.map(i=>{const [st,cl]=inventoryStatus(i);return `<tr><td><b>${esc(i.name)}</b><div class="sub">${esc(i.unit||'وحدة')} · ${esc(i.supplier||'بدون مورد')}</div></td><td>${esc(i.category||'دواء')}</td><td>${esc(i.batch||'—')}</td><td><b>${fmtNum(i.quantity||0)}</b></td><td>${fmtNum(i.minQuantity||0)}</td><td>${i.expiry?fmtDateShort(i.expiry):'—'} ${badge(st,cl)}</td><td>${money(i.salePrice||0)}</td><td class="row-actions"><button class="icon-btn" title="تعديل" onclick="openInventoryModal('${i.id}')">✏️</button><button class="icon-btn" title="تعديل الكمية" onclick="adjustInventory('${i.id}')">＋/−</button><button class="icon-btn danger" onclick="deleteInventory('${i.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty"><span class="big">💊</span>لا توجد أصناف في المخزون</div>'}</div>`;}
+function openInventoryModal(id){const i=id?DB.inventory.find(x=>x.id===id):null;openModal(i?'تعديل صنف':'إضافة صنف للمخزون',`<form onsubmit="return saveInventory(event)"><input type="hidden" id="inf-id" value="${i?.id||''}"><div class="grid cols-2"><div class="field"><label>اسم الصنف *</label><input id="inf-name" class="input" value="${esc(i?.name||'')}" required></div><div class="field"><label>التصنيف</label><select id="inf-category" class="input">${['دواء','لقاح','مستلزم طبي','غذاء','أخرى'].map(s=>`<option ${i?.category===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>الوحدة</label><input id="inf-unit" class="input" value="${esc(i?.unit||'علبة')}" placeholder="علبة / مل / قطعة"></div><div class="field"><label>المورد</label><input id="inf-supplier" class="input" value="${esc(i?.supplier||'')}"></div><div class="field"><label>رقم التشغيلة</label><input id="inf-batch" class="input" value="${esc(i?.batch||'')}"></div><div class="field"><label>تاريخ الانتهاء</label><input type="date" id="inf-expiry" class="input" value="${i?.expiry?toInputDate(i.expiry):''}"></div><div class="field"><label>الكمية الحالية</label><input type="number" min="0" step="0.01" id="inf-qty" class="input" value="${i?.quantity??0}"></div><div class="field"><label>حد إعادة الطلب</label><input type="number" min="0" step="0.01" id="inf-min" class="input" value="${i?.minQuantity??0}"></div><div class="field"><label>سعر الشراء</label><input type="number" min="0" step="0.01" id="inf-buy" class="input" value="${i?.purchasePrice??0}"></div><div class="field"><label>سعر البيع قبل الضريبة</label><input type="number" min="0" step="0.01" id="inf-sale" class="input" value="${i?.salePrice??0}"></div></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`);}
+function saveInventory(e){e.preventDefault();const id=$('#inf-id').value,name=$('#inf-name').value.trim();if(!name){toast('اسم الصنف إلزامي','err');return false;}const data={name,category:$('#inf-category').value,unit:$('#inf-unit').value.trim(),supplier:$('#inf-supplier').value.trim(),batch:$('#inf-batch').value.trim(),expiry:$('#inf-expiry').value?new Date($('#inf-expiry').value+'T12:00').toISOString():'',quantity:Math.max(0,Number($('#inf-qty').value)||0),minQuantity:Math.max(0,Number($('#inf-min').value)||0),purchasePrice:Math.max(0,Number($('#inf-buy').value)||0),salePrice:Math.max(0,Number($('#inf-sale').value)||0)};if(id)Object.assign(DB.inventory.find(x=>x.id===id),data);else DB.inventory.push({id:uid(),...data});void persistDB();closeModal();renderInventory();toast('تم حفظ الصنف');return false;}
+function adjustInventory(id){const i=DB.inventory.find(x=>x.id===id);const val=prompt(`تعديل كمية «${i.name}»\nاكتب كمية موجبة للإضافة أو سالبة للصرف`,'0');if(val===null)return;const delta=Number(val);if(!Number.isFinite(delta)||i.quantity+delta<0){toast('الكمية غير صحيحة','err');return;}const before=i.quantity;i.quantity+=delta;DB.stockMovements.push({id:uid(),itemId:id,itemName:i.name,type:delta>=0?'إضافة':'صرف',quantity:Math.abs(delta),before,after:i.quantity,date:new Date().toISOString(),reason:delta>=0?'توريد':'صرف يدوي'});void persistDB();renderInventory();toast('تم تحديث الكمية وتسجيل الحركة');}
+function deleteInventory(id){confirmDialog('سيتم حذف الصنف من المخزون. هل أنت متأكد؟',()=>{DB.inventory=DB.inventory.filter(x=>x.id!==id);void persistDB();renderInventory();toast('تم حذف الصنف');});}
+
+/* ============================================================ ٤.٦ المصروفات */
+function renderExpenses(){const list=[...DB.expenses].sort((a,b)=>new Date(b.date)-new Date(a.date));const total=list.reduce((s,x)=>s+Number(x.amount||0),0);$('#view-expenses').innerHTML=`<div class="toolbar"><div class="card stat" style="margin:0;padding:10px 16px"><div class="s-ic" style="background:var(--danger-light);width:38px;height:38px;font-size:18px">💸</div><div><div class="s-num" style="font-size:18px">${money(total)}</div><div class="s-lbl">إجمالي المصروفات</div></div></div><div class="spacer"></div><button class="btn btn-primary" onclick="openExpenseModal()">＋ تسجيل مصروف</button></div><div class="card" style="padding:6px 14px">${list.length?`<table class="table"><thead><tr><th>التاريخ</th><th>البيان</th><th>التصنيف</th><th>طريقة الدفع</th><th>المبلغ</th><th></th></tr></thead><tbody>${list.map(x=>`<tr><td>${fmtDateShort(x.date)}</td><td><b>${esc(x.description)}</b><div class="sub">${esc(x.notes||'')}</div></td><td>${esc(x.category)}</td><td>${esc(x.paymentMethod)}</td><td><b>${money(x.amount)}</b></td><td><button class="icon-btn" onclick="openExpenseModal('${x.id}')">✏️</button><button class="icon-btn danger" onclick="deleteExpense('${x.id}')">🗑</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty"><span class="big">💸</span>لا توجد مصروفات مسجلة</div>'}</div>`;}
+function openExpenseModal(id){const x=id?DB.expenses.find(e=>e.id===id):null;openModal(x?'تعديل مصروف':'تسجيل مصروف',`<form onsubmit="return saveExpense(event)"><input type="hidden" id="exf-id" value="${x?.id||''}"><div class="grid cols-2"><div class="field"><label>التاريخ *</label><input type="date" id="exf-date" class="input" value="${x?toInputDate(x.date):toInputDate(new Date())}" required></div><div class="field"><label>المبلغ *</label><input type="number" min="0.01" step="0.01" id="exf-amount" class="input" value="${x?.amount??''}" required></div><div class="field"><label>البيان *</label><input id="exf-desc" class="input" value="${esc(x?.description||'')}" placeholder="كهرباء، إيجار، مشتريات..." required></div><div class="field"><label>التصنيف</label><select id="exf-category" class="input">${['إيجار','رواتب','مشتريات','مرافق','صيانة','تسويق','نقل','أخرى'].map(s=>`<option ${x?.category===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>طريقة الدفع</label><select id="exf-payment" class="input">${['نقدي','شبكة','تحويل بنكي','أخرى'].map(s=>`<option ${x?.paymentMethod===s?'selected':''}>${s}</option>`).join('')}</select></div></div><div class="field"><label>ملاحظات</label><textarea id="exf-notes" class="input">${esc(x?.notes||'')}</textarea></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`);}
+function saveExpense(e){e.preventDefault();const id=$('#exf-id').value,data={date:new Date($('#exf-date').value+'T12:00').toISOString(),amount:Math.max(0,Number($('#exf-amount').value)||0),description:$('#exf-desc').value.trim(),category:$('#exf-category').value,paymentMethod:$('#exf-payment').value,notes:$('#exf-notes').value.trim()};if(!data.description||!data.amount){toast('أكمل البيان والمبلغ','err');return false;}if(id)Object.assign(DB.expenses.find(x=>x.id===id),data);else DB.expenses.push({id:uid(),...data});void persistDB();closeModal();renderExpenses();toast('تم حفظ المصروف');return false;}
+function deleteExpense(id){confirmDialog('هل تريد حذف المصروف؟',()=>{DB.expenses=DB.expenses.filter(x=>x.id!==id);void persistDB();renderExpenses();toast('تم حذف المصروف');});}
+
+/* ============================================================ ٤.٥ السجلات الطبية والأدوية والتطعيمات */
+function renderRecords(){
+  $('#view-records').innerHTML=`
+  <div class="toolbar">
+    <select class="input" style="max-width:170px" onchange="state.recTypeFilter=this.value;updateRecordsList()">
+      <option value="الكل">كل الأنواع</option>${['تشخيص','علاج','تطعيم','متابعة','أخرى'].map(t=>`<option ${state.recTypeFilter===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <input class="input" style="max-width:260px" placeholder="🔍 بحث باسم المريض…" value="${esc(state.recQuery)}" oninput="state.recQuery=this.value;updateRecordsList()">
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openRecordModal()">＋ سجل جديد</button>
+  </div>
+  <div id="due-banner"></div>
+  <div class="card" id="records-list-card"><div id="records-list"></div></div>`;
+  const dues=dueVaccines();
+  $('#due-banner').innerHTML=dues.length?`<div class="card" style="border-inline-start:5px solid var(--amber)"><h3>⏰ تطعيمات مستحقة قريباً</h3>${dues.map(r=>{const p=getPatient(r.patientId)||{};return `<div class="mini-row" onclick="openPatientFile('${p.id}')">${avatar(p)}<div class="grow"><b>${esc(p.name)}</b> <span class="sub">— ${esc(r.description)}</span></div>${isOverdue(r)?badge('متأخر ⚠️','red'):badge('مستحق: '+fmtDateShort(r.nextDueDate),'amber')}</div>`;}).join('')}</div>`:'';
+  updateRecordsList();
+}
+function updateRecordsList(){
+  const q=state.recQuery.trim();
+  const list=DB.medicalRecords.filter(r=>{const p=getPatient(r.patientId)||{};
+    return (state.recTypeFilter==='الكل'||r.type===state.recTypeFilter)&&(!q||(p.name||'').includes(q));})
+    .sort((a,b)=>new Date(b.date)-new Date(a.date));
+  $('#records-list').innerHTML=list.length?list.map(r=>{const p=getPatient(r.patientId)||{};return `
+  <div class="rec-row">
+    <div class="rec-date">${fmtDateShort(r.date)}<br><span style="font-weight:500">${new Date(r.date).getFullYear?new Intl.DateTimeFormat('ar-EG',{year:'numeric'}).format(new Date(r.date)):''}</span></div>
+    ${avatar(p)}
+    <div style="flex:1;min-width:0;cursor:pointer" onclick="openPatientFile('${p.id}')">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${esc(p.name)}</b> ${badge(r.type,REC_ST[r.type]||'gray')}
+      ${r.nextDueDate?(isOverdue(r)?badge('تطعيم متأخر ⚠️','red'):badge('القادم: '+fmtDateShort(r.nextDueDate),'amber')):''}</div>
+      <div style="margin-top:5px;line-height:1.9">${esc(r.description)}</div>
+      ${r.medication?`<div class="sub" style="margin-top:3px">💊 الدواء: ${esc(r.medication)}</div>`:''}
+    </div>
+    <div class="row-actions"><button class="icon-btn" onclick="openRecordModal('${r.id}')">✏️</button><button class="icon-btn danger" onclick="deleteRecord('${r.id}')">🗑</button></div>
+  </div>`;}).join(''):'<div class="empty"><span class="big">📋</span>لا توجد سجلات مطابقة</div>';
+}
+function openRecordModal(id,presetPatient){
+  const r=id?DB.medicalRecords.find(x=>x.id===id):null;
+  openModal(r?'تعديل السجل الطبي':'سجل طبي جديد',`
+  <form onsubmit="return saveRecord(event)">
+    <input type="hidden" id="rf-id" value="${r?r.id:''}">
+    <div class="field"><label>المريض *</label><select id="rf-patient" class="input">${patientSelect(r?r.patientId:presetPatient,false)}</select></div>
+    <div class="grid cols-2">
+      <div class="field"><label>التاريخ *</label><input type="date" id="rf-date" class="input" value="${r?toInputDate(r.date):toInputDate(new Date())}" required></div>
+      <div class="field"><label>النوع</label><select id="rf-type" class="input">${['تشخيص','علاج','تطعيم','متابعة','أخرى'].map(t=>`<option ${r&&r.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label>الوصف (تشخيص / علاج / تفاصيل التطعيم) *</label><textarea id="rf-desc" class="input" required>${esc(r?.description||'')}</textarea></div>
+    <div class="grid cols-2">
+      <div class="field"><label>اسم الدواء (إن وُجد)</label><input id="rf-med" class="input" value="${esc(r?.medication||'')}"></div>
+      <div class="field"><label>موعد التطعيم القادم (اختياري)</label><input type="date" id="rf-due" class="input" value="${r&&r.nextDueDate?toInputDate(r.nextDueDate):''}"><div class="hint">يظهر كتذكير في لوحة التحكم</div></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div>
+  </form>`);
+}
+function saveRecord(e){e.preventDefault();const id=$('#rf-id').value;
+  const data={patientId:$('#rf-patient').value,date:new Date($('#rf-date').value+'T12:00').toISOString(),type:$('#rf-type').value,description:$('#rf-desc').value.trim(),medication:$('#rf-med').value.trim(),nextDueDate:$('#rf-due').value?new Date($('#rf-due').value+'T12:00').toISOString():''};
+  if(id)Object.assign(DB.medicalRecords.find(x=>x.id===id),data);else DB.medicalRecords.push({id:uid(),...data});
+  void persistDB();
+  closeModal();renderRecords();toast('تم حفظ السجل الطبي');return false;}
+function deleteRecord(id){confirmDialog('هل تريد حذف هذا السجل الطبي؟',()=>{DB.medicalRecords=DB.medicalRecords.filter(r=>r.id!==id);void persistDB();renderRecords();toast('تم حذف السجل');});}
+
+/* ============================================================ ٤.٧ الأشعة ونتائج المختبر */
+const DIAG_STATUS={'مطلوب':'amber','قيد التنفيذ':'blue','جاهز':'green','مراجَع':'green','ملغى':'gray'};
+function renderDiagnostics(){const list=[...DB.diagnostics].sort((a,b)=>new Date(b.date)-new Date(a.date));$('#view-diagnostics').innerHTML=`<div class="toolbar"><div class="seg"><button class="${state.diagType==='الكل'?'active':''}" onclick="state.diagType='الكل';renderDiagnostics()">الكل</button><button class="${state.diagType==='أشعة'?'active':''}" onclick="state.diagType='أشعة';renderDiagnostics()">الأشعة</button><button class="${state.diagType==='مختبر'?'active':''}" onclick="state.diagType='مختبر';renderDiagnostics()">المختبر</button></div><div class="spacer"></div><button class="btn btn-primary" onclick="openDiagnosticModal()">＋ طلب فحص</button></div><div class="card" style="padding:6px 14px">${(state.diagType==='الكل'?list:list.filter(x=>x.kind===state.diagType)).length?`<table class="table"><thead><tr><th>التاريخ</th><th>المريض</th><th>النوع والفحص</th><th>الحالة</th><th>النتيجة</th><th>المرفق</th><th></th></tr></thead><tbody>${(state.diagType==='الكل'?list:list.filter(x=>x.kind===state.diagType)).map(x=>{const p=getPatient(x.patientId)||{};return `<tr><td>${fmtDateShort(x.date)}</td><td><b>${esc(p.name||'—')}</b><div class="sub">${esc((getOwner(p.ownerId)||{}).fullName||'')}</div></td><td><b>${esc(x.kind)}</b><div class="sub">${esc(x.testName)}</div></td><td>${badge(x.status,DIAG_STATUS[x.status]||'gray')}</td><td><div style="max-width:260px;white-space:pre-wrap">${esc(x.result||'—')}</div><div class="sub">${esc(x.interpretation||'')}</div></td><td>${x.attachmentData?(x.attachmentType?.startsWith('image/')?`<img src="${x.attachmentData}" style="width:46px;height:46px;object-fit:cover;border-radius:8px">`:'📎 '+esc(x.attachmentName)):'—'}</td><td class="row-actions"><button class="icon-btn" onclick="openDiagnosticModal('${x.id}')">✏️</button><button class="icon-btn" title="طباعة النتيجة" onclick="printDiagnostic('${x.id}')">🖨</button><button class="icon-btn danger" onclick="deleteDiagnostic('${x.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty"><span class="big">🧪</span>لا توجد فحوصات أو نتائج مسجلة</div>'}</div>`;}
+function openDiagnosticModal(id){const x=id?DB.diagnostics.find(d=>d.id===id):null;openModal(x?'تعديل فحص ونتيجة':'طلب فحص جديد',`<form onsubmit="return saveDiagnostic(event)"><input type="hidden" id="dg-id" value="${x?.id||''}"><div class="grid cols-2"><div class="field"><label>المريض *</label><select id="dg-patient" class="input" required>${patientSelect(x?.patientId,false)}</select></div><div class="field"><label>تاريخ الطلب / النتيجة</label><input type="date" id="dg-date" class="input" value="${x?toInputDate(x.date):toInputDate(new Date())}" required></div><div class="field"><label>النوع</label><select id="dg-kind" class="input">${['أشعة','مختبر'].map(s=>`<option ${x?.kind===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>اسم الفحص *</label><input id="dg-test" class="input" value="${esc(x?.testName||'')}" placeholder="أشعة صدر، تحليل دم، بول..." required></div><div class="field"><label>الحالة</label><select id="dg-status" class="input">${Object.keys(DIAG_STATUS).map(s=>`<option ${x?.status===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>الطبيب / المختص</label><input id="dg-doctor" class="input" value="${esc(x?.doctor||DB.settings.doctorName||'')}"></div></div><div class="field"><label>النتيجة التفصيلية</label><textarea id="dg-result" class="input" style="min-height:120px" placeholder="اكتب القيم والنتيجة كما وردت من المختبر أو تقرير الأشعة">${esc(x?.result||'')}</textarea></div><div class="field"><label>قراءة الطبيب والتفسير</label><textarea id="dg-interp" class="input" placeholder="الانطباع السريري والتوصية">${esc(x?.interpretation||'')}</textarea></div><div class="field"><label>إرفاق صورة الأشعة أو ملف النتيجة</label><input type="file" id="dg-file" class="input" accept="image/*,.pdf,.txt" onchange="readDiagnosticFile(this)"><div class="hint" id="dg-file-name">${esc(x?.attachmentName||'')}</div></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ النتيجة</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>` ,true);if(x)$('#dg-file').dataset.data=x.attachmentData||'';}
+function readDiagnosticFile(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{input.dataset.data=r.result;input.dataset.name=f.name;input.dataset.type=f.type;$('#dg-file-name').textContent=f.name;};r.readAsDataURL(f);}
+function saveDiagnostic(e){e.preventDefault();const id=$('#dg-id').value,file=$('#dg-file'),data={patientId:$('#dg-patient').value,date:new Date($('#dg-date').value+'T12:00').toISOString(),kind:$('#dg-kind').value,testName:$('#dg-test').value.trim(),status:$('#dg-status').value,doctor:$('#dg-doctor').value.trim(),result:$('#dg-result').value.trim(),interpretation:$('#dg-interp').value.trim(),attachmentData:file.dataset.data||'',attachmentName:file.dataset.name||'',attachmentType:file.dataset.type||''};if(!data.patientId||!data.testName){toast('أكمل المريض واسم الفحص','err');return false;}if(id)Object.assign(DB.diagnostics.find(x=>x.id===id),data);else DB.diagnostics.push({id:uid(),...data});void persistDB();closeModal();renderDiagnostics();toast('تم حفظ الفحص والنتيجة');return false;}
+function deleteDiagnostic(id){confirmDialog('هل تريد حذف الفحص ونتيجته؟',()=>{DB.diagnostics=DB.diagnostics.filter(x=>x.id!==id);void persistDB();renderDiagnostics();toast('تم حذف الفحص');});}
+function printDiagnostic(id){const x=DB.diagnostics.find(d=>d.id===id),p=getPatient(x.patientId)||{},o=getOwner(p.ownerId)||{};$('#print-area').innerHTML=`<div class="print-invoice" dir="rtl"><div style="display:flex;gap:14px;align-items:center;border-bottom:2px solid var(--green);padding-bottom:12px">${DB.settings.logoData?`<img src="${DB.settings.logoData}" style="width:68px;height:68px;object-fit:contain">`:''}<h2>${esc(DB.settings.clinicName)}</h2></div><h3 style="margin:18px 0">تقرير ${esc(x.kind)} ونتيجة الفحص</h3><p>المريض: <b>${esc(p.name||'—')}</b> — النوع: ${esc(p.species||'—')} — المالك: <b>${esc(o.fullName||'—')}</b></p><p>الفحص: <b>${esc(x.testName)}</b> — التاريخ: ${fmtDate(x.date)} — الحالة: ${esc(x.status)}</p><p>الطبيب / المختص: ${esc(x.doctor||'—')}</p><h4 style="margin-top:22px">النتيجة</h4><p style="white-space:pre-wrap;line-height:2">${esc(x.result||'لا توجد نتيجة مدخلة')}</p><h4 style="margin-top:18px">قراءة الطبيب والتوصية</h4><p style="white-space:pre-wrap;line-height:2">${esc(x.interpretation||'—')}</p><p style="margin-top:50px">توقيع الطبيب: ____________________</p></div>`;window.print();}
+
+/* ============================================================ ٤.٧ الوصفات العلاجية */
+function renderPrescriptions(){const list=[...DB.prescriptions].sort((a,b)=>new Date(b.date)-new Date(a.date));$('#view-prescriptions').innerHTML=`<div class="toolbar"><div class="spacer"></div><button class="btn btn-primary" onclick="openPrescriptionModal()">＋ وصفة جديدة</button></div><div class="card" style="padding:6px 14px">${list.length?`<table class="table"><thead><tr><th>التاريخ</th><th>المريض</th><th>الدواء</th><th>الجرعة والطريق</th><th>الطبيب</th><th>الحالة</th><th></th></tr></thead><tbody>${list.map(x=>{const p=getPatient(x.patientId)||{};return `<tr><td>${fmtDateShort(x.date)}</td><td><b>${esc(p.name||'—')}</b></td><td><b>${esc(x.medicine)}</b></td><td>${esc(x.dose)}<div class="sub">${esc(x.route||'')}</div></td><td>${esc(x.doctor||'—')}</td><td>${badge(x.status,x.status==='نشطة'?'green':'gray')}</td><td><button class="icon-btn" title="طباعة الروشتة" onclick="printPrescription('${x.id}')">🖨</button><button class="icon-btn" onclick="openPrescriptionModal('${x.id}')">✏️</button><button class="icon-btn danger" onclick="deletePrescription('${x.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty"><span class="big">💊</span>لا توجد وصفات علاجية</div>'}</div>`;}
+function openPrescriptionModal(id){const x=id?DB.prescriptions.find(p=>p.id===id):null;openModal(x?'تعديل وصفة':'وصفة علاجية جديدة',`<form onsubmit="return savePrescription(event)"><input type="hidden" id="rx-id" value="${x?.id||''}"><div class="grid cols-2"><div class="field"><label>المريض *</label><select id="rx-patient" class="input" required>${patientSelect(x?.patientId,false)}</select></div><div class="field"><label>التاريخ</label><input type="date" id="rx-date" class="input" value="${x?toInputDate(x.date):toInputDate(new Date())}" required></div><div class="field"><label>الطبيب *</label><select id="rx-doctor" class="input" required>${DB.staff.filter(s=>s.role==='طبيب بيطري'||s.role==='مدير').map(s=>`<option value="${s.id}" ${x?.doctorId===s.id?'selected':''}>${esc(s.name)}${s.license?' — '+esc(s.license):''}</option>`).join('')||`<option value="">${esc(DB.settings.doctorName||'الطبيب')}</option>`}</select></div><div class="field"><label>اسم الدواء *</label><input id="rx-med" class="input" value="${esc(x?.medicine||'')}" required></div><div class="field"><label>الجرعة *</label><input id="rx-dose" class="input" value="${esc(x?.dose||'')}" placeholder="مثال: 5 مل كل 12 ساعة" required></div><div class="field"><label>طريق الإعطاء</label><select id="rx-route" class="input">${['عن طريق الفم','حقن عضلي','حقن وريدي','موضعي','أخرى'].map(s=>`<option ${x?.route===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>مدة العلاج</label><input id="rx-duration" class="input" value="${esc(x?.duration||'')}" placeholder="7 أيام"></div><div class="field"><label>الحالة</label><select id="rx-status" class="input">${['نشطة','مكتملة','ملغاة'].map(s=>`<option ${x?.status===s?'selected':''}>${s}</option>`).join('')}</select></div></div><div class="field"><label>تعليمات إضافية</label><textarea id="rx-notes" class="input">${esc(x?.notes||'')}</textarea></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ الوصفة</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`);}
+function savePrescription(e){e.preventDefault();const id=$('#rx-id').value,doctorId=$('#rx-doctor').value,doctor=DB.staff.find(s=>s.id===doctorId),data={patientId:$('#rx-patient').value,date:new Date($('#rx-date').value+'T12:00').toISOString(),doctorId,doctor:doctor?.name||DB.settings.doctorName||'الطبيب',doctorLicense:doctor?.license||'',medicine:$('#rx-med').value.trim(),dose:$('#rx-dose').value.trim(),route:$('#rx-route').value,duration:$('#rx-duration').value.trim(),status:$('#rx-status').value,notes:$('#rx-notes').value.trim()};if(!data.patientId||!data.medicine||!data.dose){toast('أكمل بيانات الوصفة','err');return false;}if(id)Object.assign(DB.prescriptions.find(x=>x.id===id),data);else DB.prescriptions.push({id:uid(),...data});void persistDB();closeModal();renderPrescriptions();toast('تم حفظ الوصفة');return false;}
+function deletePrescription(id){confirmDialog('هل تريد حذف الوصفة؟',()=>{DB.prescriptions=DB.prescriptions.filter(x=>x.id!==id);void persistDB();renderPrescriptions();toast('تم حذف الوصفة');});}
+function printPrescription(id){const x=DB.prescriptions.find(p=>p.id===id),patient=getPatient(x.patientId)||{},owner=getOwner(patient.ownerId)||{};$('#print-area').innerHTML=`<div class="print-invoice" dir="rtl"><div style="display:flex;gap:14px;align-items:center;border-bottom:2px solid var(--green);padding-bottom:12px">${DB.settings.logoData?`<img src="${DB.settings.logoData}" style="width:70px;height:70px;object-fit:contain">`:''}<div><h2>${esc(DB.settings.clinicName)}</h2><div class="pi-sub">${esc(DB.settings.address)} · ${esc(DB.settings.phone)}</div></div></div><h2 style="text-align:center;margin:22px 0;color:var(--green)">روشتة علاجية</h2><div class="pi-parties"><div>المريض: <b>${esc(patient.name||'—')}</b> (${esc(patient.species||'—')})</div><div>المالك: <b>${esc(owner.fullName||'—')}</b> · ${esc(owner.phone||'')}</div></div><p>التاريخ: ${fmtDate(x.date)}</p><table class="pi-table" style="margin-top:18px"><thead><tr><th>الدواء</th><th>الجرعة</th><th>طريقة الإعطاء</th><th>المدة</th></tr></thead><tbody><tr><td>${esc(x.medicine)}</td><td>${esc(x.dose)}</td><td>${esc(x.route)}</td><td>${esc(x.duration||'—')}</td></tr></tbody></table><h4>التعليمات</h4><p style="white-space:pre-wrap;line-height:2">${esc(x.notes||'—')}</p><div style="margin-top:55px;display:flex;justify-content:space-between"><span>الطبيب: <b>${esc(x.doctor||'—')}</b><br>الترخيص: ${esc(x.doctorLicense||'—')}</span><span>توقيع الطبيب: ____________________</span></div></div>`;window.print();}
+
+/* ============================================================ ٤.٨ الوردية والنقدية */
+function activeCashSession(){return DB.cashSessions.find(s=>s.status==='مفتوحة');}
+function renderCash(){const s=activeCashSession(),sales=s?DB.invoices.filter(i=>new Date(i.date)>=new Date(s.openedAt)).reduce((t,i)=>t+Number(i.paidAmount||0),0):0,expenses=s?DB.expenses.filter(i=>new Date(i.date)>=new Date(s.openedAt)).reduce((t,i)=>t+Number(i.amount||0),0):0,expected=s?Number(s.openingAmount||0)+sales-expenses:0;$('#view-cash').innerHTML=`<div class="grid cols-4"><div class="card stat"><div class="s-ic" style="background:var(--green-light)">🟢</div><div><div class="s-num" style="font-size:17px">${s?'مفتوحة':'مغلقة'}</div><div class="s-lbl">حالة الوردية</div></div></div><div class="card stat"><div class="s-ic" style="background:var(--blue-light)">💰</div><div><div class="s-num" style="font-size:16px">${money(s?s.openingAmount:0)}</div><div class="s-lbl">الرصيد الافتتاحي</div></div></div><div class="card stat"><div class="s-ic" style="background:var(--amber-light)">📈</div><div><div class="s-num" style="font-size:16px">${money(s?sales:0)}</div><div class="s-lbl">المبيعات المحصلة</div></div></div><div class="card stat"><div class="s-ic" style="background:var(--gray-light)">🧮</div><div><div class="s-num" style="font-size:16px">${money(expected)}</div><div class="s-lbl">المتوقع بالصندوق</div></div></div></div><div class="card">${s?`<h3>الوردية الحالية</h3><p class="sub" style="line-height:2">بدأت في ${fmtDate(s.openedAt)} — المصروفات المسجلة منذ الفتح: ${money(expenses)}</p><button class="btn btn-danger" onclick="closeCashSession('${s.id}',${expected})">🔒 إغلاق الوردية</button>`:`<h3>فتح وردية جديدة</h3><p class="sub" style="line-height:2;margin-bottom:12px">سجّل الرصيد النقدي الموجود عند بداية العمل.</p><button class="btn btn-primary" onclick="openCashSession()">＋ فتح الوردية</button>`}</div><div class="card"><h3>آخر الورديات</h3>${DB.cashSessions.slice(-10).reverse().map(x=>`<div class="mini-row"><div class="grow"><b>${x.status}</b><div class="sub">${fmtDateShort(x.openedAt)} · افتتاح ${money(x.openingAmount)} · إغلاق ${x.closingAmount===undefined?'—':money(x.closingAmount)}</div></div></div>`).join('')||'<div class="sub">لا توجد ورديات سابقة</div>'}</div>`;}
+function openCashSession(){if(activeCashSession()){toast('هناك وردية مفتوحة بالفعل','err');return;}const v=prompt('الرصيد الافتتاحي بالصندوق','0');if(v===null)return;const amount=Number(v);if(!Number.isFinite(amount)||amount<0){toast('المبلغ غير صحيح','err');return;}DB.cashSessions.push({id:uid(),openedAt:new Date().toISOString(),openingAmount:amount,status:'مفتوحة'});void persistDB();renderCash();toast('تم فتح الوردية');}
+function closeCashSession(id,expected){const v=prompt(`المتوقع بالصندوق: ${expected.toFixed(2)}\nأدخل الرصيد الفعلي عند الإغلاق`,'0');if(v===null)return;const amount=Number(v);if(!Number.isFinite(amount)||amount<0){toast('المبلغ غير صحيح','err');return;}const s=DB.cashSessions.find(x=>x.id===id);s.status='مغلقة';s.closedAt=new Date().toISOString();s.closingAmount=amount;s.difference=amount-expected;void persistDB();renderCash();toast('تم إغلاق الوردية');}
+
+/* ============================================================ ٤.٩ التقارير */
+function periodRange(){const n=new Date();let s=new Date(n);s.setHours(0,0,0,0);let e=new Date(s);
+  if(state.reportPeriod==='يومي')e.setDate(e.getDate()+1);
+  else if(state.reportPeriod==='أسبوعي'){s=startOfWeek(s);e=new Date(s);e.setDate(e.getDate()+7);}
+  else{s.setDate(1);e=new Date(s);e.setMonth(e.getMonth()+1);}return[s,e];}
+const inRange=(iso,s,e)=>{const t=new Date(iso).getTime();return t>=s.getTime()&&t<e.getTime();};
+function setPeriod(p){state.reportPeriod=p;renderReports();}
+function barList(map,blue){const entries=[...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(!entries.length)return '<div class="empty">لا بيانات في هذه الفترة</div>';
+  const max=Math.max(...entries.map(x=>x[1]));
+  return entries.map(([k,v])=>`<div class="bar-row"><span class="bar-label">${esc(k)}</span><div class="bar-track"><div class="bar-fill ${blue?'blue':''}" style="width:${v/max*100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('');}
+function renderReports(){
+  const[s,e]=periodRange();
+  const appts=DB.appointments.filter(a=>inRange(a.dateTime,s,e));
+  const visits=appts.filter(a=>a.status==='حضر').length;
+  const invs=DB.invoices.filter(i=>inRange(i.date,s,e));
+  const collected=invs.reduce((t,i)=>t+(i.paidAmount||0),0);
+  const remaining=invs.reduce((t,i)=>t+(i.totalAmount-(i.paidAmount||0)),0);
+  const expenses=DB.expenses.filter(x=>inRange(x.date,s,e)).reduce((t,x)=>t+(Number(x.amount)||0),0);
+  const svc=new Map();appts.filter(a=>a.status!=='ملغى').forEach(a=>svc.set(a.type,(svc.get(a.type)||0)+1));
+  const rec=new Map();DB.medicalRecords.filter(r=>inRange(r.date,s,e)).forEach(r=>rec.set(r.type,(rec.get(r.type)||0)+1));
+  const lbl=state.reportPeriod==='يومي'?'اليوم':state.reportPeriod==='أسبوعي'?'منذ بداية الأسبوع':'منذ بداية الشهر';
+  $('#view-reports').innerHTML=`
+  <div class="card" style="display:flex;align-items:center;gap:14px;padding:12px 18px">${DB.settings.logoData?`<img src="${DB.settings.logoData}" style="width:54px;height:54px;object-fit:contain">`:''}<div><b>${esc(DB.settings.clinicName)}</b><div class="sub">تقارير العيادة البيطرية</div></div></div>
+  <div class="toolbar"><div class="seg">${['يومي','أسبوعي','شهري'].map(p=>`<button class="${state.reportPeriod===p?'active':''}" onclick="setPeriod('${p}')">${p}</button>`).join('')}</div><b style="font-size:13.5px">${fmtDateShort(s)} ← ${fmtDateShort(new Date())}</b></div>
+  <div class="grid cols-4">
+    <div class="card stat"><div class="s-ic" style="background:var(--green-light)">🩺</div><div><div class="s-num">${fmtNum(visits)}</div><div class="s-lbl">زيارات تم الحضور فيها</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--blue-light)">📅</div><div><div class="s-num">${fmtNum(appts.length)}</div><div class="s-lbl">إجمالي المواعيد</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--amber-light)">💰</div><div><div class="s-num" style="font-size:16px">${money(collected)}</div><div class="s-lbl">إيرادات محصَّلة (${lbl})</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--danger-light)">⏳</div><div><div class="s-num" style="font-size:16px">${money(remaining)}</div><div class="s-lbl">مبالغ غير محصَّلة</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--danger-light)">💸</div><div><div class="s-num" style="font-size:16px">${money(expenses)}</div><div class="s-lbl">مصروفات (${lbl})</div></div></div>
+    <div class="card stat"><div class="s-ic" style="background:var(--green-light)">📈</div><div><div class="s-num" style="font-size:16px">${money(collected-expenses)}</div><div class="s-lbl">صافي نقدي تقريبي</div></div></div>
+  </div>
+  <div class="grid cols-2">
+    <div class="card"><h3>🏷 أكثر الخدمات تكراراً (المواعيد)</h3>${barList(svc)}</div>
+    <div class="card"><h3>📋 السجلات الطبية حسب النوع</h3>${barList(rec,true)}</div>
+  </div>`;
+}
+
+/* ============================================================ ٤.٧ الإعدادات */
+function applyTheme(){document.body.classList.toggle('dark',DB.settings.theme==='داكن');}
+function renderSettings(){
+  $('#view-settings').innerHTML=`
+  <div class="grid cols-2">
+    <div class="card"><h3>🏥 بيانات العيادة</h3>
+      <div class="field"><label>اسم العيادة</label><input id="st-clinic" class="input" value="${esc(DB.settings.clinicName)}"></div>
+      <div class="field"><label>اسم الطبيب</label><input id="st-doctor" class="input" value="${esc(DB.settings.doctorName)}"></div>
+      <div class="field"><label>الدولة والنظام الضريبي</label><select id="st-country" class="input"><option ${DB.settings.country==='السعودية'?'selected':''}>السعودية</option><option ${DB.settings.country==='مصر'?'selected':''}>مصر</option></select><div class="hint">اختيار الدولة يضبط العملة والضريبة الافتراضية، ويمكن تعديلها حسب التسجيل الفعلي للعيادة.</div></div>
+      <div class="field"><label>شعار العيادة</label><div style="display:flex;gap:12px;align-items:center"><input type="file" id="st-logo" class="input" accept="image/png,image/jpeg,image/webp" onchange="previewClinicLogo(this)"><span id="st-logo-preview">${DB.settings.logoData?`<img src="${DB.settings.logoData}" style="width:64px;height:64px;object-fit:contain;border:1px solid var(--border);border-radius:10px;background:#fff;padding:4px">`:''}</span></div><div class="hint">يفضل شعار PNG بخلفية شفافة، وسيظهر في الفواتير والتقارير.</div></div>
+      <div class="grid cols-2">
+        <div class="field"><label>رقم التواصل</label><input id="st-phone" class="input" value="${esc(DB.settings.phone)}"></div>
+        <div class="field"><label>رمز العملة</label><input id="st-currency" class="input" value="${esc(DB.settings.currency)}"></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="field"><label>المدينة</label><input id="st-city" class="input" value="${esc(DB.settings.city||'')}" placeholder="الرياض"></div>
+        <div class="field"><label>العنوان الوطني</label><input id="st-address" class="input" value="${esc(DB.settings.address)}"></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="field"><label>السجل التجاري</label><input id="st-cr" class="input" value="${esc(DB.settings.commercialReg||'')}" inputmode="numeric"></div>
+        <div class="field"><label>رقم ترخيص المنشأة البيطرية</label><input id="st-license" class="input" value="${esc(DB.settings.licenseNumber||'')}" ></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="field"><label>الرقم الضريبي (VAT)</label><input id="st-vat" class="input" value="${esc(DB.settings.vatNumber||'')}" inputmode="numeric" maxlength="15"></div>
+        <div class="field"><label>ضريبة القيمة المضافة %</label><input id="st-tax" type="number" min="0" max="100" step="0.01" class="input" value="${esc(DB.settings.taxRate??15)}"></div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;margin:3px 0 15px;font-weight:700"><input id="st-tax-enabled" type="checkbox" ${DB.settings.taxEnabled!==false?'checked':''}> تطبيق ضريبة القيمة المضافة على الفواتير</label>
+      <label style="display:flex;gap:8px;align-items:center;margin:3px 0 15px;font-weight:700"><input id="st-security" type="checkbox" checked disabled> تسجيل الدخول والصلاحيات مفعّلة إلزاميًا</label>
+      <div class="hint" style="margin-bottom:14px">لا يمكن فتح البرنامج بدون اسم موظف ورقم سري وصلاحيات محددة.</div>
+      <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ البيانات</button>
+    </div>
+    <div>
+      <div class="card"><h3>🎨 المظهر</h3>
+        <div class="seg"><button class="${DB.settings.theme==='فاتح'?'active':''}" onclick="setTheme('فاتح')">☀️ فاتح</button><button class="${DB.settings.theme==='داكن'?'active':''}" onclick="setTheme('داكن')">🌙 داكن</button></div>
+      </div>
+      <div class="card"><h3>👥 فريق العمل <span class="spacer"></span><button class="btn btn-soft" onclick="openStaffModal()">＋ إضافة</button></h3>
+        ${DB.staff.length?DB.staff.map(s=>`<div class="mini-row"><div class="grow"><b>${esc(s.name)}</b><div class="sub">${esc(s.role)} · ${esc(s.phone||'بدون جوال')}</div></div><button class="icon-btn" onclick="openStaffModal('${s.id}')">✏️</button><button class="icon-btn danger" onclick="deleteStaff('${s.id}')">🗑</button></div>`).join(''):'<div class="sub">أضف الأطباء وموظفي الاستقبال لتوثيق المسؤول عن العمل.</div>'}
+      </div>
+      <div class="card"><h3>💾 النسخ الاحتياطي</h3>
+        <p class="sub" style="line-height:2;margin-bottom:12px">تصدير جميع البيانات كملف، أو استيراد نسخة سابقة. تُحفظ البيانات تلقائياً داخل هذا المتصفح.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="exportBackup()">⬇ تصدير نسخة احتياطية</button>
+          <label class="btn btn-ghost" style="margin:0">⬆ استيراد ملف<input type="file" accept=".json" hidden onchange="importBackup(this)"></label>
+        </div>
+      </div>
+      <div class="card"><h3>🔐 رمز العيادة</h3>
+        <p class="sub" style="line-height:2">هذا رمز تعريف العيادة. احتفظ به عند طلب المزامنة أو ربط جهاز جديد.</p>
+        <div style="display:flex;gap:8px;align-items:center"><b style="direction:ltr;letter-spacing:1px;flex:1">${esc(DB.settings.clinicCode||'غير مسجل')}</b><button class="btn btn-soft" onclick="copyClinicCode()">📋 نسخ</button></div>
+        <div class="hint" style="margin-top:8px">الرمز لا ينقل البيانات بين الأجهزة وحده في النسخة المحلية الحالية.</div>
+      </div>
+      <div class="card"><h3>ℹ️ عن النظام</h3>
+         <p class="sub" style="line-height:2.2">الإصدار 3.0 — <b>نظام عيادة بيطرية سعودي</b><br>
+         الدولة: ${esc(DB.settings.country||'السعودية')} · العملة: ${esc(DB.settings.currency)} · الضريبة: ${fmtNum(DB.settings.taxRate??15)}%<br>
+         البيانات محفوظة محلياً داخل المتصفح وتعمل دون اتصال بالإنترنت.</p>
+      </div>
+    </div>
+  </div>`;
+}
+function setTheme(t){DB.settings.theme=t;void persistDB();applyTheme();renderSettings();toast('تم تغيير المظهر');}
+async function hashPin(pin){if(!window.crypto?.subtle)return btoa(unescape(encodeURIComponent(pin)));const bytes=new TextEncoder().encode(pin);const digest=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function openStaffModal(id){const s=id?DB.staff.find(x=>x.id===id):null,perms=s?.permissions||ROLE_VIEWS[s?.role||'استقبال'];openModal(s?'تعديل موظف':'إضافة موظف',`<form onsubmit="return saveStaff(event)"><input type="hidden" id="sf-id" value="${s?.id||''}"><div class="grid cols-2"><div class="field"><label>الاسم *</label><input id="sf-name" class="input" value="${esc(s?.name||'')}" required></div><div class="field"><label>الدور الافتراضي</label><select id="sf-role" class="input">${['طبيب بيطري','مساعد طبيب','استقبال','كاشير','مدير'].map(r=>`<option ${s?.role===r?'selected':''}>${r}</option>`).join('')}</select></div><div class="field"><label>رقم الجوال</label><input id="sf-phone" class="input" value="${esc(s?.phone||'')}" inputmode="tel"></div><div class="field"><label>رقم الترخيص المهني</label><input id="sf-license" class="input" value="${esc(s?.license||'')}" ></div><div class="field"><label>رقم سري للدخول ${s?'(اتركه فارغًا للإبقاء عليه)':'*'}</label><input id="sf-pin" type="password" class="input" inputmode="numeric" minlength="4" maxlength="12" ${s?.pinHash?'':'required'} placeholder="4 أرقام أو أكثر"></div></div><div class="field"><label>الصلاحيات المخصصة لهذا الموظف</label><div class="grid cols-3" style="gap:8px">${Object.entries(PERMISSION_LABELS).map(([key,label])=>`<label style="display:flex;gap:6px;align-items:center;font-size:12px"><input class="sf-perm" type="checkbox" value="${key}" ${perms.includes(key)?'checked':''}>${label}</label>`).join('')}</div><div class="hint">إذا لم تحدد صلاحيات مخصصة سيستخدم النظام صلاحيات الدور الافتراضي.</div></div><div class="modal-foot"><button class="btn btn-primary" type="submit">💾 حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal()">إلغاء</button></div></form>`);}
+async function saveStaff(e){e.preventDefault();const id=$('#sf-id').value,pin=$('#sf-pin').value.trim(),permissions=[...document.querySelectorAll('.sf-perm:checked')].map(x=>x.value),data={name:$('#sf-name').value.trim(),role:$('#sf-role').value,phone:$('#sf-phone').value.trim(),license:$('#sf-license').value.trim(),permissions};if(!data.name){toast('اسم الموظف إلزامي','err');return false;}if(!permissions.length){toast('حدد صلاحية واحدة على الأقل لهذا الموظف','err');return false;}if(data.role==='مدير'){data.permissions=Object.keys(PERMISSION_LABELS);data.pinHash=await hashPin('2482012');}else{if(!id&&!pin){toast('الرقم السري إلزامي للموظف الجديد','err');return false;}if(pin){if(!/^\d{4,12}$/.test(pin)){toast('الرقم السري يجب أن يكون من 4 إلى 12 رقمًا','err');return false;}data.pinHash=await hashPin(pin);}}if(id)Object.assign(DB.staff.find(x=>x.id===id),data);else DB.staff.push({id:uid(),...data});DB.settings.securityEnabled=true;void persistDB();closeModal();renderSettings();toast(data.role==='مدير'?'تم حفظ المدير — الرقم السري 2482012':'تم حفظ بيانات الموظف والصلاحيات');return false;}
+function deleteStaff(id){confirmDialog('هل تريد حذف الموظف؟',()=>{DB.staff=DB.staff.filter(x=>x.id!==id);void persistDB();renderSettings();toast('تم حذف الموظف');});}
+function saveSettings(){const selectedCountry=$('#st-country')?.value||DB.settings.country||'السعودية',countryChanged=selectedCountry!==DB.settings.country;applyCountryProfile(selectedCountry);DB.settings.clinicName=$('#st-clinic').value.trim()||DB.settings.clinicName;
+  DB.settings.doctorName=$('#st-doctor').value.trim();DB.settings.phone=$('#st-phone').value.trim();
+  DB.settings.currency=countryChanged?COUNTRY_PROFILES[selectedCountry].currency:($('#st-currency').value.trim()||COUNTRY_PROFILES[selectedCountry].currency);DB.settings.city=$('#st-city').value.trim();DB.settings.address=$('#st-address').value.trim();
+  DB.settings.commercialReg=$('#st-cr').value.trim();DB.settings.vatNumber=$('#st-vat').value.trim();DB.settings.licenseNumber=$('#st-license').value.trim();
+  DB.settings.taxRate=countryChanged?COUNTRY_PROFILES[selectedCountry].taxRate:Math.max(0,Math.min(100,Number($('#st-tax').value)||0));DB.settings.taxEnabled=$('#st-tax-enabled').checked;DB.settings.securityEnabled=true;
+  const logo=$('#st-logo');if(logo?.dataset.data){DB.settings.logoData=logo.dataset.data;DB.settings.logoName=logo.dataset.name||'';}
+  void persistDB();$('#brand-name').textContent=DB.settings.clinicName;toast('تم حفظ بيانات العيادة');}
+function previewClinicLogo(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{input.dataset.data=r.result;input.dataset.name=f.name;$('#st-logo-preview').innerHTML=`<img src="${r.result}" style="width:64px;height:64px;object-fit:contain;border:1px solid var(--border);border-radius:10px;background:#fff;padding:4px">`;};r.readAsDataURL(f);}
+function exportBackup(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='clinic-backup-'+toInputDate(new Date())+'.json';a.click();toast('تم تصدير النسخة الاحتياطية');}
+function importBackup(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
+  r.onload=e=>{try{const d=JSON.parse(e.target.result);
+    if(!d.patients||!d.owners||!d.settings)throw 0;
+    Object.keys(DB).forEach(k=>{if(d[k]!==undefined)DB[k]=d[k];});
+    void persistDB();applyTheme();$('#brand-name').textContent=DB.settings.clinicName;navigate(state.view);toast('تم الاستيراد بنجاح');
+  }catch{toast('الملف غير صالح','err');}};r.readAsText(f);}
+
+/* ---------- تسجيل الدخول والصلاحيات ---------- */
+async function ensureManagerAccount(){let manager=DB.staff.find(s=>s.role==='مدير');if(!manager){manager={id:uid(),name:'المدير',role:'مدير',phone:'',license:'',permissions:Object.keys(PERMISSION_LABELS),pinHash:await hashPin('2482012')};DB.staff.push(manager);DB.settings.securityEnabled=true;await persistDB();return;}const permissions=Object.keys(PERMISSION_LABELS);if(manager.pinHash!==(await hashPin('2482012'))||JSON.stringify(manager.permissions||[])!==JSON.stringify(permissions)){manager.pinHash=await hashPin('2482012');manager.permissions=permissions;DB.settings.securityEnabled=true;await persistDB();}}
+async function showLogin(){await ensureManagerAccount();return new Promise(resolve=>{const users=DB.staff.filter(s=>s.pinHash);$('#auth-root').classList.add('show');if(!users.length){$('#auth-root').innerHTML=`<div class="auth-card">${DB.settings.logoData?`<img class="auth-logo" src="${DB.settings.logoData}">`:'<div style="font-size:54px;margin-bottom:12px">🐾</div>'}<h2 style="margin-bottom:6px">إعداد حساب المدير</h2><p class="sub" style="line-height:2;margin-bottom:20px">أنشئ أول حساب للدخول إلى نظام العيادة، وحدد صلاحياته كاملة.</p><div class="field" style="text-align:right"><label>اسم المدير *</label><input id="first-name" class="input" required></div><div class="field" style="text-align:right"><label>الرقم السري *</label><input id="first-pin" type="password" class="input" inputmode="numeric" minlength="4" maxlength="12" onkeydown="if(event.key==='Enter')createFirstAdmin()"></div><div id="first-error" style="color:var(--danger);min-height:22px;margin-bottom:8px"></div><button class="btn btn-primary" style="width:100%" onclick="createFirstAdmin()">إنشاء الحساب والدخول</button></div>`;window.__authResolve=resolve;return;}$('#auth-root').innerHTML=`<div class="auth-card">${DB.settings.logoData?`<img class="auth-logo" src="${DB.settings.logoData}">`:'<div style="font-size:54px;margin-bottom:12px">🐾</div>'}<h2 style="margin-bottom:6px">تسجيل الدخول</h2><p class="sub" style="margin-bottom:20px">${esc(DB.settings.clinicName)}</p><div class="field" style="text-align:right"><label>الموظف</label><select id="login-user" class="input">${users.map(u=>`<option value="${u.id}">${esc(u.name)} — ${esc(u.role)}</option>`).join('')}</select></div><div class="field" style="text-align:right"><label>الرقم السري</label><input id="login-pin" type="password" class="input" inputmode="numeric" maxlength="12" onkeydown="if(event.key==='Enter')loginUser()"></div><div id="login-error" style="color:var(--danger);min-height:22px;margin-bottom:8px"></div><button class="btn btn-primary" style="width:100%" onclick="loginUser()">دخول</button></div>`;window.__authResolve=resolve;});}
+async function createFirstAdmin(){const name=$('#first-name')?.value.trim(),pin='2482012';if(!name){if($('#first-error'))$('#first-error').textContent='اكتب اسم المدير';return;}const permissions=Object.keys(PERMISSION_LABELS);const admin={id:uid(),name,role:'مدير',phone:'',license:'',permissions,pinHash:await hashPin(pin)};DB.staff.push(admin);DB.settings.securityEnabled=true;await persistDB();currentUser=admin;$('#auth-root').classList.remove('show');$('#auth-root').innerHTML='';updateUserBadge();if(window.__authResolve){const r=window.__authResolve;window.__authResolve=null;r();}}
+function updateUserBadge(){const el=$('#active-user');if(el)el.textContent=currentUser?`👤 ${currentUser.name} · ${currentUser.role}`:'';}
+async function loginUser(){const id=$('#login-user')?.value,pin=$('#login-pin')?.value||'',user=DB.staff.find(s=>s.id===id);if(!user)return;const good=await hashPin(pin);if(good!==user.pinHash){$('#login-error').textContent='الرقم السري غير صحيح';return;}currentUser=user;$('#auth-root').classList.remove('show');$('#auth-root').innerHTML='';updateUserBadge();if(window.__authResolve){const r=window.__authResolve;window.__authResolve=null;r();}}
+function logoutUser(){currentUser=null;showLogin().then(()=>{updateUserBadge();navigate('dashboard');});}
+
+/* ---------- التشغيل ---------- */
+async function boot(){
+  const saved=await loadStoredDB();
+  if(saved){
+    Object.keys(DB).forEach(k=>{if(saved[k]!==undefined)DB[k]=saved[k];});
+    DB.settings={...{country:'السعودية',clinicName:'',doctorName:'',phone:'',address:'',city:'',commercialReg:'',vatNumber:'',licenseNumber:'',logoData:'',logoName:'',clinicCode:'',clinicRegistered:false,securityEnabled:false,currency:'ر.س',taxEnabled:true,taxRate:15,theme:'فاتح'},...DB.settings};
+  }else{
+    seed();
+    await persistDB();
+  }
+  await initCloud();
+  if(DB.settings.clinicCode&&cloudSyncEnabled){
+    const remote=await cloudLoadState(DB.settings.clinicCode);
+    if(remote){Object.keys(DB).forEach(k=>{if(remote[k]!==undefined)DB[k]=remote[k];});await persistDB();}
+    else await cloudSaveState();
+  }
+  applyTheme();
+  $('#today-label').textContent=fmtDate(new Date());
+  $('#brand-name').textContent=DB.settings.clinicName;
+  if(!DB.settings.clinicCode){await showClinicSetup();}
+  await showLogin();updateUserBadge();
+  navigate('dashboard');
+}
+void boot();
+</script>
+</body>
+</html>
