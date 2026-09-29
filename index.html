@@ -1184,5 +1184,195 @@ void boot();
     }
 </script>
 <!-- ========================================================================= -->
+  <!-- ================= نظام التسجيل برقم الهاتف بواسطة صلاح ================= -->
+<style>
+    /* تنسيق صندوق التسجيل بالهاتف ليكون متناسقاً تماماً مع هوية نظام العيادة */
+    .phone-auth-container {
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        direction: rtl;
+        font-family: inherit;
+    }
+    .phone-auth-title {
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: var(--text);
+        text-align: center;
+    }
+    .phone-auth-field {
+        margin-bottom: 14px;
+    }
+    .phone-auth-field label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text2);
+        margin-bottom: 6px;
+    }
+    .phone-btn {
+        width: 100%;
+        padding: 10px 18px;
+        border-radius: 13px;
+        font-weight: 700;
+        font-size: 13.5px;
+        border: none;
+        background: var(--green);
+        color: #fff;
+        transition: all .25s;
+        cursor: pointer;
+    }
+    .phone-btn:hover {
+        background: var(--green-dark);
+        transform: translateY(-1px);
+    }
+    .phone-btn.secondary {
+        background: var(--gray-light);
+        color: var(--text2);
+        margin-top: 8px;
+    }
+    .phone-btn.secondary:hover {
+        filter: brightness(0.95);
+    }
+    #otp-section {
+        border-top: 1px dashed var(--border);
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+    #phone-error-msg {
+        color: var(--danger);
+        font-weight: bold;
+        font-size: 12.5px;
+        margin-top: 8px;
+        text-align: center;
+        display: none;
+    }
+</style>
+
+<!-- واجهة المستخدم (HTML) الخاصة بالهاتف -->
+<div class="phone-auth-container" id="phone-auth-box">
+    <div class="phone-auth-title">📱 التسجيل برقم الهاتف لأول مرة</div>
+    
+    <!-- القسم الأول: إدخال رقم الهاتف -->
+    <div id="phone-number-section">
+        <div class="phone-auth-field">
+            <label for="user-phone-input">رقم الهاتف (بالصيغة الدولية مثلاً 201060547982+):</label>
+            <input type="tel" id="user-phone-input" class="input" placeholder="+2010XXXXXXXX">
+        </div>
+        <button class="phone-btn" onclick="sendOTPCode()">إرسال كود التحقق تأكيدي</button>
+    </div>
+
+    <!-- الحاوية الإجبارية المخفية لأمان جوجل ReCAPTCHA -->
+    <div id="recaptcha-container" style="margin-top: 10px;"></div>
+
+    <!-- القسم الثاني: إدخال كود الـ OTP (مخفي ويظهر بعد الإرسال) -->
+    <div id="otp-section" style="display: none;">
+        <div class="phone-auth-field">
+            <label for="otp-code-input">أدخل رمز التحقق المرسل لهاتفك (6 أرقام):</label>
+            <input type="text" id="otp-code-input" class="input" placeholder="------" style="text-align: center; letter-spacing: 4px; font-size: 16px;">
+        </div>
+        <button class="phone-btn" onclick="verifyOTPCode()">تأكيد الرمز ودخول العيادة</button>
+        <button class="phone-btn secondary" onclick="resetPhoneAuth()">تعديل الرقم</button>
+    </div>
+
+    <p id="phone-error-msg"></p>
+</div>
+
+<!-- البرمجة والربط بـ Firebase (JavaScript) -->
+<script>
+    // 1. إعداد أداة التحقق المخفية ReCAPTCHA تلقائياً عند تحميل الصفحة
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof firebase !== 'undefined') {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible', // مخفية لعدم إزعاج الطبيب
+                'callback': (response) => {
+                    // أداة الأمان جاهزة
+                }
+            });
+        }
+    });
+
+    // 2. دالة إرسال الرمز النصي OTP إلى هاتف الطبيب
+    function sendOTPCode() {
+        const phoneInput = document.getElementById('user-phone-input').value.trim();
+        const errorLbl = document.getElementById('phone-error-msg');
+        
+        if (!phoneInput.startsWith('+') || phoneInput.length < 10) {
+            errorLbl.innerText = "⚠️ يرجى كتابة الرقم بالصيغة الدولية الصحيحة تبدأ بـ (+)";
+            errorLbl.style.display = 'block';
+            return;
+        }
+
+        errorLbl.style.display = 'none';
+        const appVerifier = window.recaptchaVerifier;
+
+        firebase.auth().signInWithPhoneNumber(phoneInput, appVerifier)
+            .then((confirmationResult) => {
+                // حفظ نتيجة الطلب في المتصفح لمطابقتها لاحقاً
+                window.confirmationResult = confirmationResult;
+                
+                // تحويل الواجهة لإدخال الرمز
+                document.getElementById('phone-number-section').style.display = 'none';
+                document.getElementById('otp-section').style.display = 'block';
+                alert("💬 تم إرسال الرمز النصي التأكيدي إلى هاتفك بنجاح.");
+            }).catch((error) => {
+                console.error(error);
+                errorLbl.innerText = "❌ فشل إرسال الرسالة: " + error.message;
+                errorLbl.style.display = 'block';
+            });
+    }
+
+    // 3. دالة التحقق من الرمز المدخل ودخول النظام
+    function verifyOTPCode() {
+        const otpInput = document.getElementById('otp-code-input').value.trim();
+        const errorLbl = document.getElementById('phone-error-msg');
+
+        if (otpInput.length !== 6) {
+            errorLbl.innerText = "⚠️ يجب أن يتكون رمز التحقق من 6 أرقام.";
+            errorLbl.style.display = 'block';
+            return;
+        }
+
+        errorLbl.style.display = 'none';
+
+        window.confirmationResult.confirm(otpInput)
+            .then((result) => {
+                // نجاح التسجيل بالكامل!
+                const user = result.user;
+                
+                // تشغيل نظام الـ 14 يوماً المجانية المبرمج مسبقاً للمستخدم الجديد
+                if (!localStorage.getItem('clinic_start_date')) {
+                    localStorage.setItem('clinic_start_date', new Date().toISOString());
+                }
+                
+                // إخفاء صندوق التسجيل وفتح واجهة العيادة بالكامل
+                document.getElementById('phone-auth-box').style.display = 'none';
+                alert("🎉 أهلاً بك دكتور! تم تفعيل حسابك والبدء في الفترة التجريبية (14 يوماً).");
+                
+                // عمل تحديث بسيط لإعادة بناء لوحة تحكم العيادة النظيفة
+                if (typeof checkTrialAndLock === 'function') checkTrialAndLock();
+                else location.reload();
+
+            }).catch((error) => {
+                errorLbl.innerText = "❌ الرمز غير صحيح أو انتهت صلاحيته. حاول مجدداً.";
+                errorLbl.style.display = 'block';
+            });
+    }
+
+    // دالة لإعادة تعديل رقم الهاتف لو أخطأ الطبيب في الكتابة
+    function resetPhoneAuth() {
+        document.getElementById('phone-number-section').style.display = 'block';
+        document.getElementById('otp-section').style.display = 'none';
+        document.getElementById('phone-error-msg').style.display = 'none';
+        document.getElementById('otp-code-input').value = '';
+    }
+</script>
+<!-- ========================================================================= -->
+
 </body>
 </html>
