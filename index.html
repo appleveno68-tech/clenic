@@ -1297,16 +1297,7 @@ void boot();
         }
     });
 
-    // 2. دالة إرسال الرمز النصي OTP إلى هاتف الطبيب
-    function sendOTPCode() {
-        const phoneInput = document.getElementById('user-phone-input').value.trim();
-        const errorLbl = document.getElementById('phone-error-msg');
-        
-        if (!phoneInput.startsWith('+') || phoneInput.length < 10) {
-            errorLbl.innerText = "⚠️ يرجى كتابة الرقم بالصيغة الدولية الصحيحة تبدأ بـ (+)";
-            errorLbl.style.display = 'block';
-            return;
-        }
+  
 
         errorLbl.style.display = 'none';
         const appVerifier = window.recaptchaVerifier;
@@ -1316,27 +1307,8 @@ void boot();
                 // حفظ نتيجة الطلب في المتصفح لمطابقتها لاحقاً
                 window.confirmationResult = confirmationResult;
                 
-                // تحويل الواجهة لإدخال الرمز
-                document.getElementById('phone-number-section').style.display = 'none';
-                document.getElementById('otp-section').style.display = 'block';
-                alert("💬 تم إرسال الرمز النصي التأكيدي إلى هاتفك بنجاح.");
-            }).catch((error) => {
-                console.error(error);
-                errorLbl.innerText = "❌ فشل إرسال الرسالة: " + error.message;
-                errorLbl.style.display = 'block';
-            });
-    }
-
-    // 3. دالة التحقق من الرمز المدخل ودخول النظام
-    function verifyOTPCode() {
-        const otpInput = document.getElementById('otp-code-input').value.trim();
-        const errorLbl = document.getElementById('phone-error-msg');
-
-        if (otpInput.length !== 6) {
-            errorLbl.innerText = "⚠️ يجب أن يتكون رمز التحقق من 6 أرقام.";
-            errorLbl.style.display = 'block';
-            return;
-        }
+              
+   
 
         errorLbl.style.display = 'none';
 
@@ -1364,13 +1336,7 @@ void boot();
             });
     }
 
-    // دالة لإعادة تعديل رقم الهاتف لو أخطأ الطبيب في الكتابة
-    function resetPhoneAuth() {
-        document.getElementById('phone-number-section').style.display = 'block';
-        document.getElementById('otp-section').style.display = 'none';
-        document.getElementById('phone-error-msg').style.display = 'none';
-        document.getElementById('otp-code-input').value = '';
-    }
+   
 </script>
 <!-- ========================================================================= -->
 </body>
