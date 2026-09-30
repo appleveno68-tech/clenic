@@ -1254,33 +1254,12 @@ void boot();
     }
 </style>
 
-<!-- واجهة المستخدم (HTML) الخاصة بالهاتف -->
-<div class="phone-auth-container" id="phone-auth-box">
-    <div class="phone-auth-title">📱 التسجيل برقم الهاتف لأول مرة</div>
     
-    <!-- القسم الأول: إدخال رقم الهاتف -->
-    <div id="phone-number-section">
-        <div class="phone-auth-field">
-            <label for="user-phone-input">رقم الهاتف (بالصيغة الدولية مثلاً 201060547982+):</label>
-            <input type="tel" id="user-phone-input" class="input" placeholder="+2010XXXXXXXX">
-        </div>
-        <button class="phone-btn" onclick="sendOTPCode()">إرسال كود التحقق تأكيدي</button>
-    </div>
 
     <!-- الحاوية الإجبارية المخفية لأمان جوجل ReCAPTCHA -->
     <div id="recaptcha-container" style="margin-top: 10px;"></div>
 
-    <!-- القسم الثاني: إدخال كود الـ OTP (مخفي ويظهر بعد الإرسال) -->
-    <div id="otp-section" style="display: none;">
-        <div class="phone-auth-field">
-            <label for="otp-code-input">أدخل رمز التحقق المرسل لهاتفك (6 أرقام):</label>
-            <input type="text" id="otp-code-input" class="input" placeholder="------" style="text-align: center; letter-spacing: 4px; font-size: 16px;">
-        </div>
-        <button class="phone-btn" onclick="verifyOTPCode()">تأكيد الرمز ودخول العيادة</button>
-        <button class="phone-btn secondary" onclick="resetPhoneAuth()">تعديل الرقم</button>
-    </div>
 
-    <p id="phone-error-msg"></p>
 </div>
 
 <!-- البرمجة والربط بـ Firebase (JavaScript) -->
